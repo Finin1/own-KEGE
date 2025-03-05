@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>Режим имитации: Ввод номера бланка регистрации участника</title>
+        <meta name="viewport" content="width=device-width">
+        
+        
+    <link href="train_files/app.css" rel="stylesheet">
+
+    
+   
+        
+       <script async="" src="train_files/tag.js"></script><script src="train_files/_references.js"></script>
+
+       <script src="train_files/jquery-1.js"></script>
+
+       <script src="train_files/jquery-ui-1.js"></script>
+
+       <script src="train_files/jquery.js"></script>
+
+       <script src="train_files/core.js"></script>
+
+   
+    </head>
+<body>
+    
+
+
+
+   <div class="wrapper">
+       <h1 class="oneLine" id="title">Единый государственный экзамен Информатика и ИКТ</h1>
+       <div class="line"></div>
+       <div class="forms">
+
+
+           <div class="flexbox">
+               <div class="leftSide">
+                   <p> Введите номер вашего бланка регистрации</p>
+                   <div class="inputs">
+                       <input id="n1" class="small" maxlength="1" onkeyup="writeNumber()" type="text">
+                       <input id="n2" maxlength="6" onkeyup="writeNumber()" type="text">
+                       <input id="n3" maxlength="6" onkeyup="writeNumber()" type="text">
+                   </div>
+                   <div class="notice">
+                       На данном этапе Вам необходимо ввести с 
+клавиатуры номер бланка регистрации и нажать «Далее». Кнопка «Далее» 
+будет доступна после ввода номера бланка, включающего 13 цифр.
+                   </div>
+               </div>
+               <div class="rightSide">
+                   <p>В этом месте бланка регистрации указан номер,<br> который Вам необходимо внести в систему.</p>
+                   <div class="blank">
+                       <img src="train_files/blank.png" alt="Единый государственный экзамен Информатика и ИКТ">
+                   </div>
+               </div>
+           </div>
+
+
+
+           <div class="setBottomElements" id="startExam">
+
+    <div class="rightSide">
+        <button class="cbtn blue" name="Next" id="NextBtn" style="display: none;">Далее</button>
+    </div>
+    </div>
+    </div>
+    </div>
+
+
+
+    <script type="text/jscript">
+
+    $(function () {
+
+
+              $("[name = Next]").click(function () {
+
+                  var n1 = document.getElementById("n1");
+                  var n2 = document.getElementById("n2");
+                  var n3 = document.getElementById("n3");
+                  localStorage.setItem('number', n1.value + n2.value + n3.value);
+
+                //   var ignoreInstruction = localStorage.getItem('IgnoreInstruction');
+                  if (false) {
+                      rederict('activate.htm');
+                  }
+                  else {
+                      rederict('instr.htm');
+                  }
+
+        });
+
+
+        var number = localStorage.getItem('number');
+
+        if (number != '') {
+            var n1 = document.getElementById("n1");
+            var n2 = document.getElementById("n2");
+            var n3 = document.getElementById("n3");
+            n1.value = number.substring(0, 1);
+            n2.value = number.substring(1, 7);
+            n3.value = number.substring(7, 13);
+
+        }
+        writeNumber();
+        document.getElementById("n1").focus();
+    });
+
+    function writeNumber() {
+
+        var n1 = document.getElementById("n1");
+        var n2 = document.getElementById("n2");
+        var n3 = document.getElementById("n3");
+
+        n1.value = n1.value.replace(/\D/g, "");
+        n2.value = n2.value.replace(/\D/g, "");
+        n3.value = n3.value.replace(/\D/g, "");
+        if (n1 === document.activeElement && n1.value.length == 1) {
+            n2.focus();
+        }
+        else if (n2 === document.activeElement && n2.value.length == 6) {
+            n3.focus();
+        }
+
+        if (n1.value.length + n2.value.length + n3.value.length == 13) {
+            document.getElementById("NextBtn").style.display = "block";
+        }
+        else {
+            document.getElementById("NextBtn").style.display = "none";
+        }
+    }
+    </script>
+	
+
+<iframe name="ym-native-frame" title="ym-native-frame" style="opacity: 0 ! important; width: 0px ! important; height: 0px ! important; position: absolute ! important; left: 100% ! important; bottom: 100% ! important; border: 0px none ! important;" aria-hidden="true" frameborder="0"></iframe></body></html>

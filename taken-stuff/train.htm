@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Режим имитации: Прохождение экзамена</title>
+    <link href="train_files/app.css" rel="stylesheet">
+    <script src="train_files/_references.js"></script>
+    <script src="train_files/jquery-1.js"></script>
+    <script src="train_files/jquery-ui-1.js"></script>
+    <script src="train_files/jquery.js"></script>
+    <script src="train_files/core.js"></script>
+</head>
+<body>
+<script>
+var filesArray = [[],[],[],[],[],[],[],[],[],[{"Item1":"/Content/Attachments/1_9.xlsx","Item2":"9.xlsx"},{"Item1":"/Content/Attachments/1_9.csv","Item2":"9.csv"},{"Item1":"/Content/Attachments/1_9.ods","Item2":"9.ods"}],[{"Item1":"/Content/Attachments/1_10.docx","Item2":"10.docx"},{"Item1":"/Content/Attachments/1_10.pdf","Item2":"10.pdf"},{"Item1":"/Content/Attachments/1_10.rtf","Item2":"10.rtf"},{"Item1":"/Content/Attachments/1_10.txt","Item2":"10.txt"}],[],[],[],[],[],[],[],[{"Item1":"/Content/Attachments/1_18.csv","Item2":"18.csv"},{"Item1":"/Content/Attachments/1_18.ods","Item2":"18.ods"},{"Item1":"/Content/Attachments/1_18.xlsx","Item2":"18.xlsx"}],[],[],[],[],[],[{"Item1":"/Content/Attachments/1_24.txt","Item2":"24.txt"}],[],[{"Item1":"/Content/Attachments/1_26.txt","Item2":"26.txt"}],[{"Item1":"/Content/Attachments/1_27-A.txt","Item2":"27-A.txt"},{"Item1":"/Content/Attachments/1_27-B.txt","Item2":"27-B.txt"}]];
+var tableArray = [{"Item1":0,"Item2":0},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":2,"Item2":1},{"Item1":2,"Item2":1},{"Item1":1,"Item2":1},{"Item1":2,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":1,"Item2":1},{"Item1":2,"Item2":12},{"Item1":2,"Item2":1},{"Item1":2,"Item2":1}];
+var activeSlides = [];
+//                        1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7
+var layoutTypeArray = [0, 2,2,2,2,2,2,2,2,3,3,2,2,2,2,2,2,5,5,2,4,2,2,2,3,4,5,5];
+// 2 - один ответ без файлов
+// 3 - один ответ, с файлами
+// 4 - таблица ответов, без файлов
+// 5 - таблица ответов, с файлами
+
+var answerLength = [0,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,0,0,10,0,15,15,15,15,0,0,0];
+//                            1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7
+var validationAnswerType = [0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+// 0 - только цифры
+// 1 - цифры, минус
+// 2 - цифры, минус, запятая
+// 3 - латиница
+// 4 - латиница, дефисы
+// 5 - кириллица
+// 6 - кириллица, дефисы
+// 7 - цифры, пробел
+// 8 - цифры, латиница
+// 9 - цифры, кириллица
+// 10 - разрешить все
+
+function split1921( html, egeNo0 ) {
+  var re = /([\s\S]+?)Ответьте([\s\S]+?)&nbsp;&nbsp;<b>Вопрос 1.<\/b>([\s\S]+?)&nbsp;&nbsp;<b>Вопрос 2.<\/b>([\s\S]+?)&nbsp;&nbsp;<b>Вопрос 3.<\/b>([\s\S]+?)\s*$/;
+  parts = html.match( re );
+  for(var i=1; i<=3; i++) {
+    var egeNo = egeNo0 + i - 1;
+    var htmlPart = '';
+    if( html != '' ) {
+      htmlPart = parts[1] + '&nbsp;&nbsp;' + parts[i+2];
+      activeSlides.push( egeNo+1 );
+      }
+    var topicHTML = "<div class='item topic' style='display: none;'>"
+        + "<div class='topicHeader'>Задание " + egeNo + "</div>"   
+        + "<div class='topicContent'>" 
+        + changeImageFilePath( eol2br(htmlPart, egeNo) ) + "</div></div>";
+    $("#variant").append($(topicHTML));
+    extractTableSize( html, answers[egeNo-1], egeNo );
+    }  
+}
+function prepare( varId ) {
+  for (var key in localStorage) 
+    if (localStorage.getItem(key) != '' && key != null && key.indexOf('valueAnswer')==0) 
+      localStorage.setItem(key, '')
+  localStorage.setItem('number', '1234567890123');
+  localStorage.setItem('kim', '0250' + pad(varId, 6) ); 
+  localStorage.setItem('IgnoreInstruction', '');
+  localStorage.setItem('hash', '')
+  localStorage.setItem('startTime', '');
+}
+function getVarId() {
+  var varId = -1;
+  var paramStr = window.location.search.substring(1);
+  var params = {};
+  if( paramStr ) {
+    paramStr.replace(
+        new RegExp( "([^?=&]+)(=([^&]*))?", "g" ),
+        function( $0, $1, $2, $3 ){ params[$1] = $3; }
+        );    
+    if( params['varId'] ) 
+      varId = parseInt(params['varId']);
+    }
+  var varIdSaved = localStorage.getItem('kim');
+  if( varIdSaved  &&  varIdSaved != '' )
+    varIdSaved = parseInt(varIdSaved) % 1000000; 
+  if( varId > 0  &&  varId != varIdSaved ) {
+    prepare( varId ); // очистить все следы от предыдущего запуска
+    }
+  if( varId < 0 ) varId = 1;
+  return varId;
+}
+function getSelectedTopics() {
+  var select = '7FFFFFF';
+  var paramStr = window.location.search.substring(1);
+  var params = {};
+  if( paramStr ) {
+    paramStr.replace(
+        new RegExp( "([^?=&]+)(=([^&]*))?", "g" ),
+        function( $0, $1, $2, $3 ){ params[$1] = $3; }
+        );    
+    if( params['select'] ) 
+      select = params['select'];
+    }
+  return select;
+}
+function pad(num, size) {
+  var s = "000000000" + num;
+  return s.substr(s.length-size);
+}
+function checkValidationRules( egeNo, value ) {
+  value = value.replace(/ /gi, '');
+  value = value.replace(/\r\n/gi, '');
+  validationAnswerType[egeNo] = 10; // allow all
+  if( ! (new RegExp('[^0-9]').test(value)) )
+     validationAnswerType[egeNo] = 0;
+  else if( ! (new RegExp('[^0-9\-]').test(value)) )
+     validationAnswerType[egeNo] = 1;
+  else if( ! (new RegExp('[^0-9\-\,]').test(value)) )
+     validationAnswerType[egeNo] = 2;
+  else if( ! (new RegExp('[^a-zA-Z]').test(value)) )
+     validationAnswerType[egeNo] = 3;
+  else if( ! (new RegExp('[^a-zA-Z\-]').test(value)) )
+     validationAnswerType[egeNo] = 4;
+  else if( ! (new RegExp('[^а-яА-Я]').test(value)) )
+     validationAnswerType[egeNo] = 5;
+  else if( ! (new RegExp('[^а-яА-Я\-]').test(value)) )
+     validationAnswerType[egeNo] = 6;
+  else if( ! (new RegExp('[^0-9 \f\n\r\t\v]').test(value)) )
+     validationAnswerType[egeNo] = 7;
+  else if( ! (new RegExp('[^0-9a-zA-Z]').test(value)) )
+     validationAnswerType[egeNo] = 8;
+  else if( ! (new RegExp('[^0-9а-яА-Я]').test(value)) )
+     validationAnswerType[egeNo] = 9;
+}
+var answers = [];
+function saveAnswers( data ) {
+  var egeNo = 0;
+  answers = [];
+  for(var i=0; i<data['topics'].length; i++) {
+    var topic = data['topics'][i];
+    var topicAnswer = topic['answer']; 
+    if( topicAnswer.indexOf('1)') < 0  ) { 
+      answers.push( topicAnswer );
+      egeNo += 1;
+      checkValidationRules( egeNo, topicAnswer );
+      if( egeNo == 19 ) 
+      	for( var k=0; k<2; k++ ) { 
+          answers.push( topicAnswer );
+          egeNo += 1;
+          checkValidationRules( egeNo, topicAnswer );
+          }
+      }
+    else {
+      topicAnswer = topicAnswer.split('\r\n');
+      for( var k=0; k<3; k++ ) {
+        var p = topicAnswer[k].indexOf(') ');
+        if( p >= 0 ) 
+          topicAnswer[k] = topicAnswer[k].substring(p+2); 
+        topicAnswer[k] = topicAnswer[k].trim();
+        answers.push( topicAnswer[k] );
+        egeNo += 1;
+        checkValidationRules( egeNo, topicAnswer[k] );
+        }  
+      }
+    }
+  answersJSON = JSON.stringify(answers);
+  localStorage.setItem('variantAnswers', answersJSON );
+}
+function loadVariant() {
+  // var egeId = document.getElementById('egeId');
+  // $("#variant").children().remove();
+  var varId = getVarId();
+  var selectedTopics = getSelectedTopics();
+  $.ajax( {
+    type: 'GET',
+    url: '../gen.php?action=returnVar',
+    data: 'varId=' + varId + '&select=' + selectedTopics,
+    success:
+      function(data) {
+        var kim = document.getElementById("kim");
+        kim.innerHTML = 'КИМ № ' + pad(250000000+varId, 10); 
+        data = JSON.parse(data);
+        saveAnswers(data);
+        activeSlides = [1];
+        var egeNo = 1; 
+        for(var i=0; i<data['topics'].length; i++) {
+	      var topic = data['topics'][i];
+	      topic['answer'] = topic['answer'].replace(/  +/g, ' ');
+	      if( egeNo > 27 ) break;
+          if( egeNo == 19 ) {
+            split1921( topic["content"], egeNo );
+          	if( topic["content"] == '' )  
+              for( var k=19; k<=21; k++ ) {
+                var tag = document.getElementById( 'item_' + (k+1) ); 
+          	    tag.style.display = 'none';
+                }
+            egeNo += 3;  
+            continue;    
+            }
+          var topicHTML = "<div class='item topic' style='display: none;'>"
+             + "<div class='topicHeader'>Задание " + egeNo + "</div>"   
+             + "<div class='topicContent'>" 
+             + changeImageFilePath( eol2br(topic["content"]), egeNo ) + "</div></div>";
+          $("#variant").append($(topicHTML));
+          extractTableSize( topic["content"], topic["answer"], egeNo );	
+          if( topic["content"] == '' ) {
+          	var tag = document.getElementById( 'item_' + (egeNo+1) ); 
+          	tag.style.display = 'none';
+            }
+          else    
+            activeSlides.push( egeNo+1 );
+          egeNo += 1; 
+          }
+        adjustScroll();
+        HideRLButton();
+        }
+    }
+  );
+}
+function eol2br ( s ) { 
+  var re = new RegExp("([^>])(\r\n)+", 'g');
+  return s.replace(re, "$1<br/>");
+}
+function extractTableSize( content, answer, egeNo ) {
+  // if( ! [18, 25].includes(egeNo) ) return;
+  // tableArray[egeNo] = { 'Item1': 1, 'Item2': 1 };
+  var ansArray = answer.split('\n');
+  var ans1 = ansArray[0].trim().split(' ');
+  var rows = 1;
+  if( egeNo != 17 && (ansArray.length > 1  ||  egeNo == 25) ) 
+    rows = 12;
+  if( egeNo == 27 ) 
+    rows = 2;
+  tableArray[egeNo] = { 'Item1': ans1.length, 'Item2': rows };
+  if( tableArray[egeNo]['Item1'] == 1 )
+    if( [3, 5].includes(layoutTypeArray[egeNo]) )
+      layoutTypeArray[egeNo] = 3;   
+    else  
+      layoutTypeArray[egeNo] = 2;   
+  else
+    if( [3, 5].includes(layoutTypeArray[egeNo]) )
+      layoutTypeArray[egeNo] = 5;   
+    else 
+      layoutTypeArray[egeNo] = 4;   
+}
+function extractFilenames( html, egeNo ) {
+  a = html.match(/<a href="([^"]+)">/g);
+  if( !a ) return;
+  files = [];
+  for(var i=0; i<a.length; i++) {
+    ref = a[i].match(/<a href="([^"]+)">/);
+    fname = ref[1].split('/').pop();
+    files.push( {'Item1': ref[1], 'Item2': fname } );
+  }
+  filesArray[egeNo] = files;
+}
+function changeImageFilePath( html, egeNo ) {  
+  var imagePath = document.getElementById('imagePath');
+  html = html.replace(/img src="([^:])/g,'img src="'+imagePath.value+'$1');
+  html = html.replace(/img src=":/g,'img src="');
+  var filePath = document.getElementById('filePath');
+  html = html.replace(/a href="([^:])/g,'a href="'+filePath.value+'$1');
+  html = html.replace(/a href=":/g,'a href="');
+  extractFilenames( html, egeNo );	
+  return html;
+}
+</script>
+
+<input type="hidden" name="imagePath" id="imagePath" value="/cms/images/"/>
+<input type="hidden" name="filePath" id="filePath" value="/cms/files/"/>
+
+<div class="header">
+    <div class="left">
+        <div class="timer" title="Таймер показывает количество оставшегося времени до завершения экзамена. Время, оставшееся до окончания экзамена, отображаемое в ПО для сдачи экзамена, является ориентировочным, фактическое время окончания выполнения экзаменационной работы зафиксировано организатором на доске (информационном стенде).">
+            <i class="icon-clock"></i>
+            <span id="timer">3:55</span>
+        </div>
+        <div class="kim" id="kim">КИМ № 0250000001</div>
+        <div class="bp" id="br">БР № 1111111111111</div>
+    </div>
+    <div class="right">
+        <button onclick="ShowAlert()">Завершить экзамен досрочно</button>
+        <div class="descIcons">
+            <div class="img">
+                <img src="train_files/info2.png" onclick="ShowInstruction()" title="Используйте эту кнопку для открытия окна с инструкцией по работе со станцией КЕГЭ, с которой Вы ознакомились перед началом выполнения экзаменационной работы.">
+            </div>
+            <div class="img">
+                <img src="train_files/hide2.png" title="Используйте эту кнопку для сворачивания окна станции КЕГЭ и перехода к выполнению заданий с использованием ПО, установленного на компьютер.">
+            </div>
+            <div class="img">
+                <img src="train_files/close2.png" title="Для закрытия станции КЕГЭ необходимо пригласить технического специалиста ППЭ.">
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+<div class="row withScroll" id="row">
+    <div class="leftSide">
+        <div class="scrollBlock">
+            <div class="text">
+                <span>Дано ответов</span>
+                <p id="existsAnswers">0/27</p>
+            </div>
+            <div class="scrollUp active">↑</div>
+            <div id="numbersList" class="slider-dots numbersList">
+                        <span class="taskLink slider-dots_item" onclick="currentSlide(1)" id="item_1">i</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(2)" id="item_2">1</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(3)" id="item_3">2</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(4)" id="item_4">3</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(5)" id="item_5">4</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(6)" id="item_6">5</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(7)" id="item_7">6</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(8)" id="item_8">7</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(9)" id="item_9">8</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(10)" id="item_10">9</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(11)" id="item_11">10</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(12)" id="item_12">11</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(13)" id="item_13">12</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(14)" id="item_14">13</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(15)" id="item_15">14</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(16)" id="item_16">15</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(17)" id="item_17">16</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(18)" id="item_18">17</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(19)" id="item_19">18</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(20)" id="item_20">19</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(21)" id="item_21">20</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(22)" id="item_22">21</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(23)" id="item_23">22</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(24)" id="item_24">23</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(25)" id="item_25">24</span>                         <span class="taskLink slider-dots_item active" onclick="currentSlide(26)" id="item_26">25</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(27)" id="item_27">26</span>                         <span class="taskLink slider-dots_item" onclick="currentSlide(28)" id="item_28">27</span>
+            </div>
+            <div class="scrollDown active">↓</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="slider" id="variant">
+                    <div class="item img" style="display: none;">
+                        <img src="train_files/01.png" alt="1">
+                    </div>
+
+                    <div class="wrapLink prv"> <a class="prev" onclick="minusSlide()"><img src="train_files/kege_examination_left-active.png" alt="Влево"></a></div>
+                    <div class="wrapLink nxt"><a class="next" onclick="plusSlide()"><img src="train_files/kege_examination_right-active.png" alt="Вправо"></a></div>
+        </div>
+        <div class="footer">
+            <div class="attachFiles" id="attachFiles"></div>
+            <div id="block" class="block" style="display: flex;">
+                <!--add class active-->
+                <input onkeyup="updateAnswer(0)" type="text"> <!--add attr disabled-->
+                <button class="cbtn delete" onclick="clearAnswer()"><img src="train_files/kege_examination_delete_answer.png" alt="Delete"></button>
+                <button class="cbtn safe" onclick="SaveAnswer()"><span>Сохранить ответ</span> <span>Ответ сохранен</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="rightSide">
+        <p><span>Ответ</span>Введите или скопируйте свой ответ в поля таблицы</p>
+        <div class="table" id="table">
+        <div class="tr">
+          <div class="td" style="width:50px;"><span>&nbsp;</span></div>
+          <div class="td" style="width:110px;"><span>1</span></div>
+          <div class="td" style="width:110px;"><span>2</span></div>
+        </div>
+        <div class="tr">
+          <div class="td" style="width:50px;"><span>1</span></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="1_1_12_2" type="text"></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="1_2_12_2" type="text"></div>
+        </div>
+        <div class="tr">
+          <div class="td" style="width:50px;"><span>2</span></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="2_1_12_2" type="text"></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="2_2_12_2" type="text"></div>
+        </div><div class="tr">
+          <div class="td" style="width:50px;"><span>3</span></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="3_1_12_2" type="text"></div>
+          <div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="3_2_12_2" type="text"></div>
+        </div>
+<div class="tr">
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="3_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="3_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>4</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="4_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="4_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>5</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="5_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="5_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>6</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="6_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="6_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>7</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="7_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="7_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>8</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="8_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="8_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>9</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="9_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="9_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>10</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="10_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="10_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>11</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="11_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="11_2_12_2" type="text"></div>
+</div>
+<div class="tr">
+<div class="td" style="width:50px;"><span>12</span></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="12_1_12_2" type="text"></div>
+<div class="td" style="width:110px;"><input onkeyup="updateAnswer(0)" id="12_2_12_2" type="text"></div>
+</div>        </div>
+        <div class="setButtons" id="matrixBtns">
+            <div class="cbtn clear" onclick="clearAnswer()">Очистить</div>
+            <div class="cbtn safe" onclick="SaveAnswer()"><span>Сохранить ответ</span> <span>Ответ сохранен</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="popub">
+    <div class="overlay"></div>
+    <div class="modalBlock">
+        <div class="heading" id="header">Досрочное завершение экзамена</div>
+        <div class="text" id="ptext">
+            Вы действительно уверены, что хотите завершить экзамен?
+            В случае завершения экзамена вернуться к вводу ответов будет невозможно.
+
+        </div>
+        <div class="setButtons">
+            <button class="cbtn" onclick="rederict('finish.htm')">Да</button>
+            <button class="cbtn" onclick="HideAlert()">Нет</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="popub2">
+    <div class="overlay"></div>
+    <div class="modalBlock">
+        <div class="heading" id="header">Внимание!</div>
+
+        <div class="flexbox">
+            <div class="img">
+                <img src="train_files/warning1.png" alt="!">
+            </div>
+            <div class="text" id="ptext2"> </div>
+        </div>
+        <div class="setButtons">
+            <button class="cbtn" onclick="HideAlert2()">Ок</button>
+        </div>
+    </div>
+</div>
+
+<div class="modalInfo" id="info" style="z-index:100;">
+    <div class="overlay"></div>
+    <div class="modalSlider">
+        <div class="sliderInfo ">
+            <div class="itemI img" style="display: block;">
+                <img src="train_files/1.png" alt="1">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/2.png" alt="2">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/3.png" alt="3">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/4.png" alt="4">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/5.png" alt="5">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/6.png" alt="6">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/7.png" alt="7">
+            </div>
+            <div class="itemI img" style="display: none;">
+                <img src="train_files/8.png" alt="8">
+            </div>
+            <div class="wrapLink disabled"> <a class="prev" onclick="minusSlideI()"><img src="train_files/kege_examination_left-active.png" alt="Влево"></a></div>
+            <div class="wrapLink"><a class="next" onclick="plusSlideI()"><img src="train_files/kege_examination_right-active.png" alt="Вправо"></a></div>
+        </div>
+        <span class="closeI" id="NextBtnI">x</span>
+    </div>
+</div>
+
+<script type="text/jscript">
+
+    var slideIndex = 1;
+    var root;
+    var duration;
+    $(function () {
+        duration = 235;
+        showSlides(slideIndex);
+        updateUnswerCount();
+	var brNumber = localStorage.getItem('number');
+        if( ! brNumber ) brNumber = '1234567890123';
+        document.getElementById('br').textContent = 'БР № ' + brNumber;
+        setInterval(function () { timer(); }, 1000);
+    });
+
+    function handlePaste(e) {
+        var clipboardData, pastedData;
+
+        e.stopPropagation();
+        e.preventDefault();
+
+        clipboardData = e.clipboardData || window.clipboardData;
+        pastedData = clipboardData.getData('Text');
+
+        var rows = pastedData.split(/\r\n|\n|\r/);
+        sRow = parseInt(e.target.id.split('_')[0]);
+        sCol = parseInt(e.target.id.split('_')[1]);
+        maxRow = parseInt(e.target.id.split('_')[2]);
+        maxCol = parseInt(e.target.id.split('_')[3]);
+
+        for (rowIndex = 0; rowIndex < Math.min(rows.length, maxRow - sRow + 1); rowIndex++) {
+            var row = rows[rowIndex];
+            var cols = row.split(/,|;| |\t/);
+            if (cols != '')
+                for (colIndex = 0; colIndex < Math.min(cols.length, maxCol - sCol + 1); colIndex++)
+                    if (cols[colIndex] != '')
+                        document.getElementById((sRow + rowIndex) + '_' + (sCol + colIndex) + '_' + (maxRow) + '_' + (maxCol)).value = cols[colIndex];
+        }
+    }
+
+    function timer() {
+        var startTime = localStorage.getItem('startTime');
+        if( ! startTime ) {
+          startTime = Math.floor(new Date().getTime() / 1000);
+          localStorage.setItem('startTime', ''+startTime );
+          }
+        var totalSeconds = duration * 60 + (startTime - Math.floor(new Date().getTime() / 1000));
+        var totalHours = Math.floor(totalSeconds / 3600);
+        var totalMins = Math.floor((totalSeconds % 3600) / 60);
+        document.getElementById('timer').innerHTML = totalHours + ':' + (totalMins > 9 ? totalMins : '0' + totalMins);
+        if (totalSeconds < 0) {
+            rederict('finish.htm');
+        }
+    }
+
+    function InitTable() {
+
+        var table = tableArray[slideIndex - 1];
+
+        if (table.Item1 > 0 && table.Item2 > 0) {
+            inner = '<div class="tr" > <div class="td" style="width:50px;"><span>&nbsp;</span></div>';
+            for (i = 1; i <= table.Item1; i++) {
+
+                inner += '<div class="td" style="width:110px;"><span>'+i+'</span></div>';
+            }
+            inner += '</div>';
+            for (row = 1; row <= table.Item2; row++) {
+
+                inner += '<div class="tr"><div class="td" style="width:50px;"><span>'+row+'</span></div>';
+                for (col = 1; col <= table.Item1; col++) {
+
+                    inner += '<div class="td"  style="width:110px;"><input type="text"  onkeyup="updateAnswer(0)" id=' + (row ) + '_' + (col) + '_' + (table.Item2) + '_' + (table.Item1)+'></div>';
+                }
+                inner += '</div>';
+            }
+
+            document.getElementById('table').innerHTML = inner;
+            inputs = document.getElementsByClassName('rightSide')[0].getElementsByTagName('input');
+            for (i = 0; i < inputs.length;i++)
+                inputs[i].addEventListener('paste', handlePaste);
+        }
+    }
+
+    function InsertAttachments() {
+
+        var attachments = filesArray[slideIndex-1];
+        if (attachments.length > 0) {
+            inner = '';
+            for (i = 0; i < attachments.length; i++) {
+
+                inner += '<a download="' + attachments[i].Item2 +'" href="' + attachments[i].Item1 + '" class="file"> <i class="icon-file"></i> <span>' + attachments[i].Item2 + '</span></a>';
+            }
+            document.getElementById('attachFiles').innerHTML = inner;
+        }
+        else {
+            document.getElementById('attachFiles').innerHTML = '';
+        }
+    }
+
+    function ExistAnswer(index) {
+        for (var key in localStorage) {
+            if (localStorage.getItem(key) != '' && key != null && key.indexOf('valueAnswer' + (index + 1) + '_') == 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    function updateAnswer() {
+        updateAnswer(-1)
+    }
+
+    function updateAnswer(exist) {
+
+        var array = layoutTypeArray;
+        var ae;
+        if (exist == null || exist < 0) 
+            ae = ExistAnswer(slideIndex - 1);
+        else 
+            ae = exist;
+
+        if (array[slideIndex - 1] == 0 || array[slideIndex - 1] == 1 || array[slideIndex - 1] == 2 || array[slideIndex - 1] == 3) {
+
+            if (ae == 1) {
+                document.getElementById('block').className = 'block active';
+            }
+            else {
+                document.getElementById('block').className = 'block';
+            }
+        }
+        else if (array[slideIndex - 1] == 4 || array[slideIndex - 1] == 5) {
+
+            if (ae==1) {
+                document.getElementById('matrixBtns').className = 'setButtons active';
+            }
+            else {
+                document.getElementById('matrixBtns').className = 'setButtons';
+            }
+        }
+    }
+
+    function clearAnswer() {
+        var array = layoutTypeArray;
+
+        if (array[slideIndex - 1] == 0 || array[slideIndex - 1] == 1 || array[slideIndex - 1] == 2 || array[slideIndex - 1] == 3) {
+            container = document.getElementsByClassName('footer');
+            document.getElementById('block').className = 'block';
+            document.getElementById('block').getElementsByTagName('input')[0].disabled = false;
+        }
+        else if (array[slideIndex - 1] == 4 || array[slideIndex - 1] == 5) {
+            container = document.getElementsByClassName('rightSide');
+            document.getElementById('matrixBtns').className = 'setButtons';
+        }
+
+        inputs = container[0].getElementsByTagName('input');
+        for (index = 0; index < inputs.length; ++index) {
+            inputs[index].value = '';
+        }
+    }
+
+    function ValidateAnswer(validationAnswerType, value) {
+        var errorMessage = 'Введённый ответ не соответствует допустимым символам задания.\nДопустимые символы: ';
+        if (validationAnswerType == 0 && new RegExp('[^0-9]').test(value)) {
+            return errorMessage + 'цифры';
+        }
+        else if (validationAnswerType == 1 && new RegExp('[^0-9\-]').test(value)) {
+            return errorMessage + 'цифры, минус';
+        }
+        else if (validationAnswerType == 2 && new RegExp('[^0-9\-\,]').test(value)) {
+            return errorMessage + 'цифры, минус, запятая';
+        }
+        else if (validationAnswerType == 3 && new RegExp('[^a-zA-Z]').test(value)) {
+            return errorMessage + 'латиница';
+        }
+        else if (validationAnswerType == 4 && new RegExp('[^a-zA-Z\-]').test(value)) {
+            return errorMessage + 'латиница, дефисы';
+        }
+        else if (validationAnswerType == 5 && new RegExp('[^а-яА-Я]').test(value)) {
+            return errorMessage + 'кириллица';
+        }
+        else if (validationAnswerType == 6 && new RegExp('[^а-яА-Я\-]').test(value)) {
+            return errorMessage + 'кириллица, дефисы';
+        }
+        else if (validationAnswerType == 7 && new RegExp('[^0-9 \f\n\r\t\v]').test(value)) {
+            return errorMessage + 'цифры, пробел';
+        }
+        else if (validationAnswerType == 8 && new RegExp('[^0-9a-zA-Z]').test(value)) {
+            return errorMessage + 'цифры, латиница';
+        }
+        else if (validationAnswerType == 9 && new RegExp('[^0-9a-zA-Z]').test(value)) {
+            return errorMessage + 'цифры, кириллица';
+        }
+        else if ( validationAnswerType == 10 ) {
+            return '';
+        }
+         return '';
+    }
+
+    function ValidateAnswers(answerLength, validationAnswerType, type, inputs) {
+        var array = layoutTypeArray;
+        var empty = true;
+        var validLen = true;
+
+        for (i = 0; i < inputs.length; i++) {
+            if (inputs[i].value != null && inputs[i].value != '')
+                empty = false;
+
+            if (inputs[i].value != null && inputs[i].value != '' && inputs[i].value.length > answerLength && answerLength>0)
+                validLen = false;
+        }
+
+        if (empty) return null;
+        if (!validLen) {
+            var message;
+            message = type == 1 ? "Введенный ответ не соответствует допустимому количеству символов ответа на задание.\nМаксимальное допустимое количество символов: "
+                                : "Ответ, введенный в поля таблицы не соответствует допустимому количеству символов ответа на задание.\nМаксимальное допустимое количество символов в одной ячейке таблицы: ";
+
+            message += answerLength;
+            return message;
+        }
+
+        var error=''
+        for (i = 0; i < inputs.length; i++) {
+            error = ValidateAnswer(validationAnswerType, inputs[i].value)
+            if (error != '') break;
+        }
+        return error;
+    }
+
+
+    function SaveAnswer() {
+
+        var array = layoutTypeArray;
+
+        type = 0;
+
+        if (array[slideIndex - 1] == 0 || array[slideIndex -1] == 1 || array[slideIndex - 1] == 2 || array[slideIndex - 1] == 3 ) {
+            container = document.getElementsByClassName('footer');
+            type = 1;
+        }
+        else if (array[slideIndex - 1] == 4 || array[slideIndex - 1] == 5){
+            container = document.getElementsByClassName('rightSide');
+            type = 2;
+        }
+
+        inputs = container[0].getElementsByTagName('input');
+        var res = ValidateAnswers(answerLength[slideIndex - 1], validationAnswerType[slideIndex - 1], type, inputs);
+
+        if (res != '' && res !=null) {
+            ShowAlert2(res);
+        }
+        else {
+
+            for (index = 0; index < inputs.length; ++index) {
+                localStorage.setItem('valueAnswer' + slideIndex + '_' + index, inputs[index].value);
+            }
+
+            updateUnswerCount();
+            updateAnswer();
+        }
+    }
+
+    function updateUnswerCount() {
+        var answers = new Set();
+
+        for (var key in localStorage) {
+            if (localStorage.getItem(key) != '' && key != null && key.indexOf('valueAnswer') == 0) {
+                answers.add(key.substr(0, key.indexOf("_")));
+            }
+        }
+        document.getElementById("existsAnswers").textContent = answers.size + '/' + 27;
+    }
+
+    function LoadAnswer() {
+        var array = layoutTypeArray;
+
+        if (array[slideIndex - 1] == 0 || array[slideIndex -1] == 1 || array[slideIndex -1] == 2 || array[slideIndex -1] == 3) {
+            container = document.getElementsByClassName('footer');
+        }
+        else if (array[slideIndex - 1] == 4 || array[slideIndex - 1] == 5) {
+            container = document.getElementsByClassName('rightSide');
+        }
+
+        inputs = container[0].getElementsByTagName('input');
+
+        for (index = 0; index < inputs.length; ++index) {
+            // Store
+            inputs[index].value = localStorage.getItem('valueAnswer' + slideIndex + '_' + index);
+        }
+    }
+
+    function HideRLButton() {
+        var prev = document.querySelector('.prev');
+        var next = document.querySelector('.next');
+
+        next.parentElement.classList.remove("disabled");
+        prev.parentElement.classList.remove("disabled");
+
+        if (slideIndex <= 1) 
+            prev.parentElement.classList.add("disabled");
+        
+        //if (slideIndex >= document.getElementsByClassName("item").length) 
+        if( slideIndex >= Math.max.apply(null, activeSlides) ) 
+            next.parentElement.classList.add("disabled");
+    };
+
+function isVisible(elem) {
+    if (!(elem instanceof Element)) throw Error('DomUtil: elem is not an element.');
+    const style = getComputedStyle(elem);
+    if (style.display === 'none') return false;
+    if (style.visibility !== 'visible') return false;
+    if (style.opacity < 0.1) return false;
+    if (elem.offsetWidth + elem.offsetHeight + elem.getBoundingClientRect().height +
+        elem.getBoundingClientRect().width === 0) {
+        return false;
+    }
+    const elemCenter   = {
+        x: elem.getBoundingClientRect().left + elem.offsetWidth / 2,
+        y: elem.getBoundingClientRect().top + elem.offsetHeight / 2
+    };
+    if (elemCenter.x < 0) return false;
+    if (elemCenter.x > (document.documentElement.clientWidth || window.innerWidth)) return false;
+    if (elemCenter.y < 0) return false;
+    if (elemCenter.y > (document.documentElement.clientHeight || window.innerHeight)) return false;
+    let pointContainer = document.elementFromPoint(elemCenter.x, elemCenter.y);
+    do {
+        if (pointContainer === elem) return true;
+    } while (pointContainer = pointContainer.parentNode);
+    return false;
+}
+
+    function plusSlide() {
+
+    	if( slideIndex >= Math.max.apply(null, activeSlides) ) 
+    	  return;
+
+        slideIndex += 1;
+    	while( activeSlides.indexOf(slideIndex) < 0 )
+          slideIndex += 1;  		 
+
+        showSlides( slideIndex );
+
+        var dots = document.getElementsByClassName("slider-dots_item");
+        if( ! isVisible(dots[slideIndex - 1]) ) {
+          var scrollDown = $('.scrollDown');	
+          scrollDown.trigger('mousedown');
+          // dots[slideIndex - 1].scrollIntoView({ block: "end" });
+          }
+
+    }
+
+    function minusSlide() {
+
+    	if( slideIndex <= 1 ) return;
+
+        slideIndex -= 1;
+    	while( activeSlides.indexOf(slideIndex) < 0 )
+          slideIndex -= 1;  		 
+
+    	showSlides( slideIndex );
+
+        var dots = document.getElementsByClassName("slider-dots_item");
+        dots[slideIndex - 1].scrollIntoView({ block: "start" });
+        document.getElementsByClassName('header')[0].scrollIntoView({ block: "end" });
+    }
+
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    function showSlides( n ) {
+        var i;
+        var slides = document.getElementsByClassName("item");
+        var dots = document.getElementsByClassName("slider-dots_item");        
+
+        if (n > slides.length) {
+            slideIndex = 1
+        }
+        if (n < 1) {
+            slideIndex = slides.length
+        }
+        for (i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+        }
+        for (i = 0; i < dots.length; i++) {
+            dots[i].className = dots[i].className.replace(" active", "");
+        }
+
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].className += " active";
+
+        var index = layoutTypeArray[slideIndex - 1];
+        if (index == 0 ) {
+            document.getElementById("row").className = "row withScroll withFooter";
+            document.getElementById("block").style.display = "none";
+        }
+        else if (index == 1 || index == 2 || index == 3) {
+            document.getElementById("row").className = "row withScroll withFooter";
+            document.getElementById("block").style.display = "flex";
+        }
+        else if (index == 4){
+            document.getElementById("row").className = "row withScroll";
+            document.getElementById("block").style.display = "flex";
+        }
+        else if (index == 5) {
+            document.getElementById("row").className = "row withFooterMatrix";
+            document.getElementById("block").style.display = "flex";
+        }
+        InitTable();
+        InsertAttachments();
+        LoadAnswer();
+        updateAnswer();
+        UpdateSlideWithAnswer();
+        HideRLButton();
+    }
+
+    function UpdateSlideWithAnswer() {
+
+        var array = ["/Images/kim/01.png","/Images/kim/02.png","/Images/kim/03.png","/Images/kim/04.png","/Images/kim/05.png","/Images/kim/06.png","/Images/kim/07.png","/Images/kim/08.png","/Images/kim/09.png","/Images/kim/10.png","/Images/kim/11.png","/Images/kim/12.png","/Images/kim/13.png","/Images/kim/14.png","/Images/kim/15.png","/Images/kim/16.png","/Images/kim/17.png","/Images/kim/18.png","/Images/kim/19.png","/Images/kim/20.png","/Images/kim/21.png","/Images/kim/22.png","/Images/kim/23.png","/Images/kim/24.png","/Images/kim/25.png","/Images/kim/26.png","/Images/kim/27.png","/Images/kim/28.png"];
+        for (i = 1; i <= array.length; i++) {
+            if (slideIndex == i) {
+                document.getElementById("item_" + i).className = "taskLink slider-dots_item active";
+            }
+            else {
+                if (ExistAnswer(i - 1) == 1 ) {
+                    document.getElementById("item_" + i).className = "taskLink slider-dots_item done";
+                }
+                else {
+                    document.getElementById("item_" + i).className = "taskLink slider-dots_item";
+                }
+            }
+        }
+    }
+
+    /* Индекс слайда по умолчанию */
+    var slideIndexI = 1;
+    showSlidesI(slideIndexI);
+
+    /* Функция увеличивает индекс на 1, показывает следующй слайд*/
+    function plusSlideI() {
+        showSlidesI(slideIndexI += 1);
+    }
+
+    /* Функция уменьшяет индекс на 1, показывает предыдущий слайд*/
+    function minusSlideI() {
+        showSlidesI(slideIndexI -= 1);
+    }
+
+    /* Устанавливает текущий слайд */
+    function currentSlideI(n) {
+        showSlidesI(slideIndexI = n);
+    }
+
+    /* Основная функция сладера */
+    function showSlidesI(n) {
+        var prevI = document.querySelector('.sliderInfo .prev'),
+            nextI = document.querySelector('.sliderInfo .next');
+        var i;
+        var slides = document.getElementsByClassName("itemI");
+
+        if (n >= slides.length) {
+            slideIndexI = slides.length
+            nextI.parentElement.classList.add("disabled");
+            prevI.parentElement.classList.remove("disabled");
+        }
+        else {
+            nextI.parentElement.classList.remove("disabled");
+        }
+
+        if (n <= 1) {
+            slideIndexI = 1
+            prevI.parentElement.classList.add("disabled");
+            nextI.parentElement.classList.remove("disabled");
+        }
+        else {
+            prevI.parentElement.classList.remove("disabled");
+        }
+
+        for (i = 0; i < slides.length; i++) {
+            slides[i].style.display = "none";
+
+        }
+        slides[slideIndexI - 1].style.display = "block";
+    }
+
+    document.getElementById("NextBtnI").onclick = function () {
+        HideInstruction();
+    }
+
+    function ShowAlert() {
+        document.getElementById("popub").className = 'modal active';
+    }
+
+    function ShowAlert2(text) {
+        document.getElementById("popub2").className = 'modal active';
+        document.getElementById("ptext2").textContent = text;
+
+    }
+
+    function HideAlert() {
+        document.getElementById("popub").className = 'modal';
+    }
+
+    function HideAlert2() {
+        document.getElementById("popub2").className = 'modal';
+    }
+
+    function ShowInstruction() {
+        showSlidesI(1);
+        document.getElementById("info").className = 'modalInfo active';
+    }
+
+    function HideInstruction() {
+        document.getElementById("info").className = 'modalInfo';
+
+    }
+</script>
+
+<script src="train_files/app.js"></script>
+<script>
+loadVariant();
+</script>
+
+</body></html>

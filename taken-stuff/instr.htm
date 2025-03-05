@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Режим имитации: Инструкция</title>
+
+    <link href="train_files/Site.css" rel="stylesheet">
+
+    <link href="train_files/Main.css" rel="stylesheet">
+
+    <link href="train_files/app.css" rel="stylesheet">
+
+    <link href="train_files/tooltipster.css" rel="stylesheet">
+
+    <script src="train_files/_references.js"></script>
+
+    <script src="train_files/jquery-1.js"></script>
+
+    <script src="train_files/jquery-ui-1.js"></script>
+
+    <script src="train_files/jquery.js"></script>
+
+    <script src="train_files/core.js"></script>
+
+   
+</head>
+
+<body>
+    
+<div class="wrapper">
+    <h1 class="oneLine">Инструкция</h1>
+    <div class="line"></div>
+    <div class="forms">
+
+        <div class="content">
+            <div class="slider">
+                <div class="item img" style="display: block;">
+                    <img src="train_files/instr1.png" alt="1">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr2.png" alt="2">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr3.png" alt="3">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr4.png" alt="4">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr5.png" alt="5">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr6.png" alt="6">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr7.png" alt="7">
+                </div>
+                <div class="item img" style="display: none;">
+                    <img src="train_files/instr8.png" alt="8">
+                </div>
+
+                <div class="wrapLink disabled"> <a class="prev" onclick="minusSlide()"><img src="train_files/kege_examination_left-active.png" alt="Влево"></a></div>
+                <div class="wrapLink"><a class="next" onclick="plusSlide()"><img src="train_files/kege_examination_right-active.png" alt="Вправо"></a></div>
+            </div>
+        </div>
+
+            <div class="setBottomElements" style="display: flex;">  
+                <button class="cbtn blue" name="Next" id="NextBtn" style="display:none;">Далее</button>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+    $(function() {
+        $("[name = Next]").click(function() {
+             rederict('activate.htm');
+        });
+
+        Mouse("#help_ins", "#comment");
+        Help("help_ins");
+
+        if (0 == 0) {
+            DisableItem($('#comment'), false);
+        }
+
+        ResizeImage();
+    });
+
+    function ResizeImage() {
+        var w = $("#picture").width();
+        var h = $("#picture").height();
+
+        $("#picture").width(w + "px");
+        $("#picture").height(h + "px");
+    }
+
+        var prev = document.querySelector('.prev'),
+            next = document.querySelector('.next');
+
+        /* Индекс слайда по умолчанию */
+        var slideIndex = 1;
+        showSlides(slideIndex);
+
+        /* Функция увеличивает индекс на 1, показывает следующй слайд*/
+        function plusSlide() {
+            showSlides(slideIndex += 1);
+        }
+
+        /* Функция уменьшяет индекс на 1, показывает предыдущий слайд*/
+        function minusSlide() {
+            showSlides(slideIndex -= 1);
+        }
+
+        /* Устанавливает текущий слайд */
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        /* Основная функция сладера */
+        function showSlides(n) {
+            var i;
+            var slides = document.getElementsByClassName("item");
+
+            if (n >= slides.length) {
+                slideIndex = slides.length
+                next.parentElement.classList.add("disabled");
+                prev.parentElement.classList.remove("disabled");
+                document.getElementById("NextBtn").style.display = 'block';
+            }
+            else {
+                next.parentElement.classList.remove("disabled");
+                document.getElementById("NextBtn").style.display = 'none';
+            }
+
+            if (n <= 1) {
+                slideIndex = 1
+                prev.parentElement.classList.add("disabled");
+                next.parentElement.classList.remove("disabled");
+            }
+            else {
+                prev.parentElement.classList.remove("disabled");
+            }
+
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+  
+            }
+            slides[slideIndex - 1].style.display = "block";
+        }
+
+
+    </script>
+
+
+
+
+</body></html>
