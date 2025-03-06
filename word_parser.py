@@ -3,6 +3,7 @@ from os import listdir
 from pathlib import Path
 from spire.doc import Document, DocumentObjectType, FileFormat, RowCollection
 
+
 def parse_document_to_txt(document: Document) -> None:
     section = document.Sections[0]
     table = section.Tables[0]
