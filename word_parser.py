@@ -12,7 +12,7 @@ def parse_document(document: Document) -> None:
         second_cell = row.Cells[1]
 
         task_number = first_cell.Paragraphs[0].Text
-        task_text = second_cell.Paragraphs[0].Text
+        
 
         image = None
         second_cell_par_children = second_cell.Paragraphs[0].ChildObjects
@@ -22,9 +22,11 @@ def parse_document(document: Document) -> None:
                 image = obj.ImageBytes
 
         htm_save_path = Path("template", f"task{task_number}.htm")
+        paragraphs = second_cell.Paragraphs
         with open(htm_save_path, "w", encoding="utf-8") as htm_file:
-            htm_file.write(task_text.replace("\x0b", "\n"))
-            
+            for i in range(paragraphs.Count):
+                task_text = paragraphs.get_Item(i).Text
+                htm_file.write(task_text.replace("\x0b", "\n") + "\n")
 
         if image is not None:
             img_save_path = Path("static", "img", f"img{task_number}.png")
