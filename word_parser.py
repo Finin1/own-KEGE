@@ -1,8 +1,8 @@
-from spire.doc import Document, DocumentObjectType
+from spire.doc import Document, DocumentObjectType, FileFormat, RowCollection
 from pathlib import Path
 
 
-def parse_document(document: Document) -> None:
+def parse_document_to_txt(document: Document) -> None:
     section = document.Sections[0]
     table = section.Tables[0]
     rows = table.Rows
@@ -34,8 +34,30 @@ def parse_document(document: Document) -> None:
                 img_file.write(image)
 
 
+def separate_word_to_tasks(document: Document) -> None:
+    section = document.Sections[0]
+    table = section.Tables[0]
+    rows = table.Rows
+    for i in range(rows.Count):
+        row = rows.get_Item(i)
+        task_number = row.Cells[0].Paragraphs[0].Text 
+        
+        cut_off_task = Document()
+        section = cut_off_task.AddSection()
+        new_table = section.AddTable()
+        new_table.AddRow()
+        new_table.Rows.Insert(0, row.Clone())
+        
+        cut_off_task.HtmlExportOptions.ImageEmbedded = False
+        cut_off_task.HtmlExportOptions.ImagesPath = "static\\img"
+        
+        path_to_save = Path("template", f"task{task_number}.html")
+        cut_off_task.SaveToFile(str(path_to_save), FileFormat.Html)
+        cut_off_task.Close()
+
+
 if __name__ == "__main__":
     # document_to_parse = Document("test.docx")
     document_to_parse = Document()
     document_to_parse.LoadFromFile("test.docx")
-    parse_document(document_to_parse)
+    separate_word_to_tasks(document_to_parse)
