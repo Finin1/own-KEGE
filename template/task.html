@@ -1,7 +1,7 @@
 
 <html>
 	<head>
-		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="../static/style.css">
 
 		<!--			http://10.42.0.1:8080/task?num=1-->
 	</head>
@@ -70,7 +70,7 @@
 			console.log(JSON.parse(xmlHttp.responseText))
 				document.getElementById('task'+n+'inf').innerHTML = JSON.parse(xmlHttp.responseText).content;
 			}
-			xmlHttp.open( "GET", 'http://10.42.0.1:8080/task/'+n, true );
+			xmlHttp.open( "GET", 'http://0.0.0.0:8080/task/'+n, true );
 			xmlHttp.send(null);
 			
 		}
