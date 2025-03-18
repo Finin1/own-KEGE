@@ -1,0 +1,80 @@
+
+<html>
+	<head>
+		<link rel="stylesheet" href="style.css">
+
+		<!--			http://10.42.0.1:8080/task?num=1-->
+	</head>
+	<body>
+		<form>
+			<header>
+				<input class="menu-btn" id="send-work-btn" type="submit" value="Отправить работу">
+				<span id="timer">4:00</span>
+				<span id="title">ЕГЭ по ОБЖ #12415353</span>
+			</header>
+			<div id="workspace">
+
+				<div id="task-select" class="scrollbar">
+
+					<label class="task-num-lbl">
+						<input class="hidden" name="task-num-rdb" type="radio" onChange="task1rdb.checked=true;get_task_by_num(1)">
+						<div>1</div>
+					</label>
+					<label class="task-num-lbl">
+						<input class="hidden" name="task-num-rdb" type="radio" onChange="task2rdb.checked=true;get_task_by_num(2)">
+						<div>2</div>
+					</label>
+				</div>
+				<div id="task-screen">
+					<div id="greeting">
+						<br>
+
+						НЕ СПАТЬ СОЛДАТ !<br>
+						ВРЕМЯ ПОШЛО !
+					</div>
+					<input type="radio" id="task1rdb" name="task" class="task-rdb hidden">
+					<div class="task" id="task1" >
+						<div class="info scrollbar" id="task1inf">
+							1
+						</div>
+						<div class="answer">
+							<div class="answer-container">
+								<b>№1 Ответ:</b><br>
+								<input name="answer1"><br>
+								<div >Сохранить ответ</div>
+							</div>
+						</div>
+					</div>
+					<input type="radio" id="task2rdb" name="task" class="task-rdb hidden">
+					<div class="task" id="task2">
+						<div class="info scrollbar"  id="task2inf">
+							2
+						</div>
+						<div class="answer">
+							<div class="answer-container">
+								<b >№2 Ответ:</b><br>
+								<input name="answer2"><br>
+								<div >Сохранить ответ</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</form>
+	<script>
+		function get_task_by_num(n)	{
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onload = function(){
+			console.log('!')
+			console.log(JSON.parse(xmlHttp.responseText))
+				document.getElementById('task'+n+'inf').innerHTML = JSON.parse(xmlHttp.responseText).content;
+			}
+			xmlHttp.open( "GET", 'http://10.42.0.1:8080/task/'+n, true );
+			xmlHttp.send(null);
+			
+		}
+	</script>
+	</body>
+
+</html>
