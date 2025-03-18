@@ -15,7 +15,6 @@ def parse_document_to_txt(document: Document) -> None:
 
         task_number = first_cell.Paragraphs[0].Text
         
-
         image = None
         second_cell_par_children = second_cell.Paragraphs[0].ChildObjects
         for j in range(second_cell_par_children.Count):
@@ -89,12 +88,27 @@ def remove_task_numbers():
             html_file.write(old_html)
 
 
+def get_body():
+    tasks = listdir("template")
+    for task in tasks:
+        path_to_task = Path("template", task)
+        with open(path_to_task, "r", encoding="utf-8") as html_file:
+            old_html = html_file.readline()
+        
+        body_pattern = r"<body>(.*?)<\/body>"
+        old_html = re.findall(body_pattern, old_html)[0]
+        
+        with open(path_to_task, "w", encoding="utf-8") as html_file:
+            html_file.write(old_html)
+    
+
 def parse_document(path_to_document: Path) -> None:
     document_to_parse = Document()
     document_to_parse.LoadFromFile(str(path_to_document))
     separate_word_to_tasks(document_to_parse)
     remove_red_watermarks()
     remove_task_numbers()
+    get_body()
 
 
 if __name__ == "__main__":
