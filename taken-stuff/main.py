@@ -7,14 +7,10 @@ app = Flask(__name__)
 
 @app.route("/train")
 def train():
-    return "\n".join(open("taken-stuff\\train.htm", encoding="utf-8").readlines())
+    return "\n".join(open("train.htm", encoding="utf-8").readlines())
     # return "hello, world"
 
-# @app.route("/train_files/<path>")
-# def train_files(path):
-#     if path.endswith(".css"):
-#         return "\n".join(open(f"taken-stuff\\train_files\\{path}", encoding="utf-8").readlines())
-    
+
 @app.get("/generate")
 def generate_var():
     response = {}

@@ -1,22 +1,13 @@
-from os import listdir
+from uvicorn import run
+from fastapi import FastAPI
+from os import listdir 
 from pathlib import Path
-from flask import Flask, render_template
-# from api import app as api_app
 
-app = Flask(__name__)
 
-@app.route("/train")
-def train():
-    return "\n".join(open("taken-stuff\\train.htm", encoding="utf-8").readlines())
-    # return "hello, world"
+app = FastAPI(root_path="/api")
 
-# @app.route("/train_files/<path>")
-# def train_files(path):
-#     if path.endswith(".css"):
-#         return "\n".join(open(f"taken-stuff\\train_files\\{path}", encoding="utf-8").readlines())
-    
 @app.get("/generate")
-def generate_var():
+async def generate_var():
     response = {}
     response["varId"] = 1
     topics = []
@@ -34,4 +25,4 @@ def generate_var():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080)
+    run(app=app, host="127.0.0.1", port=8080)
