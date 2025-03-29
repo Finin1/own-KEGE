@@ -62,6 +62,9 @@ def separate_word_to_tasks(document: Document) -> None:
 def remove_red_watermarks():
     tasks = listdir("template")
     for task in tasks:
+        if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
+            continue
+
         path_to_task = Path("template", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
@@ -76,6 +79,9 @@ def remove_red_watermarks():
 def remove_task_numbers():
     tasks = listdir("template")
     for task in tasks:
+        if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
+            continue
+
         path_to_task = Path("template", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
@@ -89,9 +95,48 @@ def remove_task_numbers():
             html_file.write(old_html)
 
 
+def split19_21():
+    with open(Path("template", "task19 20 21.html"), "rb") as tasks_html:
+        soup = BeautifulSoup(tasks_html, "html.parser")
+        all_spans = soup.find_all("span")
+
+    question_indexes = {} 
+    for i, span in enumerate(all_spans):
+        if "Вопрос 1." in span:
+            question_indexes["first"] = i
+        elif "Вопрос 2." in span:
+            question_indexes["second"] = i
+        elif "Вопрос 3." in span:
+           question_indexes["third"] = i
+
+    # need to refactor
+    task_19_text = "".join(map(str, all_spans[:question_indexes["second"]])).replace("Вопрос 1.", "<br>")
+    task_20_text = "".join(map(str, all_spans[question_indexes["second"] + 2:question_indexes["third"]]))
+    task_21_text = "".join(map(str, all_spans[question_indexes["third"] + 2:]))
+    
+    # need to refactor
+    with open(Path("template", "task19.html"), "w", encoding="utf-8") as task19_html:
+        task19_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
+                          + task_19_text 
+                          + "</p></td></tr></table></div>")
+
+    with open(Path("template", "task20.html"), "w", encoding="utf-8") as task20_html:
+        task20_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
+                          + task_20_text 
+                          + "</p></td></tr></table></div>")
+
+        
+    with open(Path("template", "task21.html"), "w", encoding="utf-8") as task21_html:
+        task21_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
+                          + task_21_text 
+                          + "</p></td></tr></table></div>")
+
+
 def get_body():
     tasks = listdir("template")
     for task in tasks:
+        if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
+            continue
         path_to_task = Path("template", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
@@ -110,6 +155,7 @@ def parse_document(path_to_document: Path) -> None:
     remove_red_watermarks()
     remove_task_numbers()
     get_body()
+    split19_21()
 
 
 if __name__ == "__main__":
