@@ -5,6 +5,7 @@ from pathlib import Path
 from flask import Flask
 from fastapi.middleware.cors import CORSMiddleware 
 
+
 app = FastAPI(root_path="/api")
 f_app = Flask(__name__)
 origins = ["*"]
@@ -16,6 +17,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+
 @app.get("/task/{num}")
 async def get_number(num: int):
     response: dict[str, Any] = {}
@@ -26,5 +28,4 @@ async def get_number(num: int):
 
 
 if __name__ == "__main__":
-    # f_app.run(host="0.0.0.0", port=8080)
     run(app=app, host="0.0.0.0", port=8080)

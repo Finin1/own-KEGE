@@ -1,7 +1,8 @@
 import re
 from os import listdir
 from pathlib import Path
-from spire.doc import Document, DocumentObjectType, FileFormat, RowCollection
+from spire.doc import Document, DocumentObjectType, FileFormat
+from bs4 import BeautifulSoup
 
 
 def parse_document_to_txt(document: Document) -> None:
