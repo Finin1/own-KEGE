@@ -53,7 +53,7 @@ def finish():
 @app.route("/task/<num>")
 def get_number(num: int):
     print(num)
-    return render_template(f"templates/task{num}.html")
+    return render_template(f"task{num}.html")
 
 
 if __name__ == '__main__':
