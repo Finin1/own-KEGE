@@ -23,7 +23,7 @@ def parse_document_to_txt(document: Document) -> None:
             if obj.DocumentObjectType == DocumentObjectType.Picture:
                 image = obj.ImageBytes
 
-        htm_save_path = Path("template", f"task{task_number}.htm")
+        htm_save_path = Path("templates", f"task{task_number}.htm")
         paragraphs = second_cell.Paragraphs
         with open(htm_save_path, "w", encoding="utf-8") as htm_file:
             for i in range(paragraphs.Count):
@@ -54,18 +54,18 @@ def separate_word_to_tasks(document: Document) -> None:
         cut_off_task.HtmlExportOptions.ImageEmbedded = False
         cut_off_task.HtmlExportOptions.ImagesPath = str(path_to_img)
         
-        path_to_save = Path("template", f"task{task_number}.html")
+        path_to_save = Path("templates", f"task{task_number}.html")
         cut_off_task.SaveToFile(str(path_to_save), FileFormat.Html)
         cut_off_task.Close()
 
 
 def remove_red_watermarks():
-    tasks = listdir("template")
+    tasks = listdir("templates")
     for task in tasks:
         if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
             continue
 
-        path_to_task = Path("template", task)
+        path_to_task = Path("templates", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
         
@@ -77,12 +77,12 @@ def remove_red_watermarks():
 
 
 def remove_task_numbers():
-    tasks = listdir("template")
+    tasks = listdir("templates")
     for task in tasks:
         if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
             continue
 
-        path_to_task = Path("template", task)
+        path_to_task = Path("templates", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
         
@@ -96,7 +96,7 @@ def remove_task_numbers():
 
 
 def split19_21():
-    with open(Path("template", "task19 20 21.html"), "rb") as tasks_html:
+    with open(Path("templates", "task19 20 21.html"), "rb") as tasks_html:
         soup = BeautifulSoup(tasks_html, "html.parser")
         all_spans = soup.find_all("span")
 
@@ -115,29 +115,29 @@ def split19_21():
     task_21_text = "".join(map(str, all_spans[question_indexes["third"] + 2:]))
     
     # need to refactor
-    with open(Path("template", "task19.html"), "w", encoding="utf-8") as task19_html:
+    with open(Path("templates", "task19.html"), "w", encoding="utf-8") as task19_html:
         task19_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
                           + task_19_text 
                           + "</p></td></tr></table></div>")
 
-    with open(Path("template", "task20.html"), "w", encoding="utf-8") as task20_html:
+    with open(Path("templates", "task20.html"), "w", encoding="utf-8") as task20_html:
         task20_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
                           + task_20_text 
                           + "</p></td></tr></table></div>")
 
         
-    with open(Path("template", "task21.html"), "w", encoding="utf-8") as task21_html:
+    with open(Path("templates", "task21.html"), "w", encoding="utf-8") as task21_html:
         task21_html.write('<div><table cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td style="width:500.05pt; padding-right:5.4pt; padding-left:5.4pt; vertical-align:top"><p style="margin:4.3pt; line-height:15pt">' 
                           + task_21_text 
                           + "</p></td></tr></table></div>")
 
 
 def get_body():
-    tasks = listdir("template")
+    tasks = listdir("templates")
     for task in tasks:
         if not re.fullmatch(r"task(?:[1-9]|1[0-8]|2[2-7]|19 20 21)\.html", task):
             continue
-        path_to_task = Path("template", task)
+        path_to_task = Path("templates", task)
         with open(path_to_task, "r", encoding="utf-8") as html_file:
             old_html = html_file.readline()
         
