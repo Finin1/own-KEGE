@@ -13,7 +13,6 @@ class Task(NamedTuple):
 
 app = Flask(__name__)
 app.app_context()
-app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "0"
 current_task_nums = [Task(1),Task(2),Task(3),Task(4),Task(5),Task(6),Task(7),Task(8),Task(9),Task(10)]
 
