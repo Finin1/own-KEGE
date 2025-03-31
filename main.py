@@ -1,6 +1,8 @@
 from flask import Flask, render_template, session, redirect, request
 from typing import Any, NamedTuple,List
 from pathlib import Path
+from database import create_db, create_session
+from database import Student
 
 
 class Task(NamedTuple):
@@ -57,4 +59,6 @@ def get_number(num: int):
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=80, debug=True)
+    create_db()
+    app.run(host='localhost', port=80) # , debug=True
+ 
