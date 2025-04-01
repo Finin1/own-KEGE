@@ -3,17 +3,21 @@ from openpyxl import load_workbook, Workbook
 from sqlalchemy import Select
 
 from main import app
-from word_parser import parse_document
+from word_parser import parse_Poliacov_document
 from database import Student, create_session, create_db
 
 
 def get_students_list(path_to_students_list: Path) -> bool:
+    confirmation = input("Delete all old data? Y/N \n")
+    if confirmation != "Y":
+        exit(0)
+
     with create_session() as session:
         statement: Select = Select(Student)
         students = session.scalars(statement=statement).all()
         try:
-            for student in students:
-                session.delete(student)
+            for student_to_remove in students:
+                session.delete(student_to_remove)
             session.commit()
         except Exception as ex:
             print(ex)
@@ -54,5 +58,5 @@ if __name__ == "__main__":
     create_db()
     while not get_students_list(Path("students_list.xlsx")):
         pass
-    parse_document(Path("test.docx"))
+    parse_Poliacov_document(Path("test2.docx"))
     app.run(host="localhost", port=8080)

@@ -1,6 +1,5 @@
 from flask import Flask, render_template, session, redirect, request
-from typing import Any, NamedTuple,List
-from pathlib import Path
+from typing import NamedTuple, List
 
 from sqlalchemy import Select
 from database import create_db, create_session
@@ -16,7 +15,8 @@ class Task(NamedTuple):
 app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
-current_task_nums = [Task(1),Task(2),Task(3),Task(4),Task(5),Task(6),Task(7),Task(8),Task(9),Task(10)]
+current_task_nums = [Task(1), Task(2), Task(3), Task(4), Task(5),
+                     Task(6), Task(7), Task(8), Task(9), Task(10)]
 
 
 @app.route('/', methods=["GET"])
@@ -34,14 +34,14 @@ def task():
             return render_template('error.html', title='Много хочешь, ВВЕДИ КОД')
     elif request.method == 'POST':
         try:
-            with create_session() as db_session: 
-                statement: Select = Select(Student.code)
+            with create_session() as db_session:
+                statement = Select(Student.code)
                 codes = db_session.scalars(statement=statement).all()
-                print(codes)
+                # Возможно изменить
                 if int(request.form['code']) not in codes:
                     print("bad")
                     return render_template("error.html", title="СВОЙ КОД ВВЕДИ")
-        except:
+        except Exception:
             return render_template('error.html', title='Думаешь самый умный ?')
         if len(request.form['code']) == 0:
             return render_template('error.html', title='Код активации нужно ВВЕСТИ')
@@ -51,7 +51,7 @@ def task():
 
 @app.route('/finish/', methods=["POST"])
 def finish():
-    if not 'code' in session:
+    if 'code' not in session:
         return render_template('error.html', title='Ты сломал систему, МОЛОДЕЦ')
     print(session['code'])
     print(request.form)

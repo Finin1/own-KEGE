@@ -7,7 +7,6 @@ def random_code():
     min_ = 1000
     max_ = 9999
     rand = randint(min_, max_)
-
     return rand
 
 
@@ -22,15 +21,25 @@ class Student(Base):
     surname: Mapped[str]
     code: Mapped[int] = mapped_column(unique=True, default=random_code)
 
-    answers: Mapped[list["Answer"]] = relationship(back_populates="student")
+    answers: Mapped[list["StudentAnswer"]] = relationship(back_populates="student")
 
 
-class Answer(Base):
-    __tablename__ = "answers"
+class StudentAnswer(Base):
+    __tablename__ = "students_answers"
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"))
+    task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"))
+    student_answer: Mapped[str]
+
+    task: Mapped["Task"] = relationship(back_populates="students_answers")
+    student: Mapped["Student"] = relationship(back_populates="answers")
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+    id: Mapped[int] = mapped_column(primary_key=True)
     task_number: Mapped[int]
     task_type: Mapped[int] = mapped_column(nullable=True)
-    answer: Mapped[str]
+    task_answer: Mapped[str]
 
-    student: Mapped["Student"] = relationship(back_populates="answers")
+    students_answers: Mapped[list["StudentAnswer"]] = relationship(back_populates="task")

@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from .models import Base, Answer, Student
+from .models import Base, StudentAnswer, Student, Task  # noqa
 
 
 engine = create_engine("sqlite:///database/database.sqlite3")
+
 
 def create_db() -> None:
     Base.metadata.create_all(engine)
