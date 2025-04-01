@@ -1,6 +1,8 @@
 from flask import Flask, render_template, session, redirect, request
 from typing import Any, NamedTuple,List
 from pathlib import Path
+
+from sqlalchemy import Select
 from database import create_db, create_session
 from database import Student
 
@@ -32,7 +34,13 @@ def task():
             return render_template('error.html', title='Много хочешь, ВВЕДИ КОД')
     elif request.method == 'POST':
         try:
-            request.form['code']
+            with create_session() as db_session: 
+                statement: Select = Select(Student.code)
+                codes = db_session.scalars(statement=statement).all()
+                print(codes)
+                if int(request.form['code']) not in codes:
+                    print("bad")
+                    return render_template("error.html", title="СВОЙ КОД ВВЕДИ")
         except:
             return render_template('error.html', title='Думаешь самый умный ?')
         if len(request.form['code']) == 0:
@@ -59,5 +67,4 @@ def get_number(num: int):
 
 if __name__ == '__main__':
     create_db()
-    app.run(host='localhost', port=80) # , debug=True
- 
+    app.run(host='localhost', port=8080)  # , debug=True

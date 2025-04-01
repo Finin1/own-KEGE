@@ -29,5 +29,8 @@ class Answer(Base):
     __tablename__ = "answers"
     id: Mapped[int] = mapped_column(primary_key=True)
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"))
+    task_number: Mapped[int]
+    task_type: Mapped[int] = mapped_column(nullable=True)
+    answer: Mapped[str]
 
     student: Mapped["Student"] = relationship(back_populates="answers")
