@@ -20,7 +20,8 @@ class Student(Base):
     name: Mapped[str]
     surname: Mapped[str]
     code: Mapped[int] = mapped_column(unique=True, default=random_code)
-
+    done: Mapped[bool] = mapped_column(default=False)
+    
     answers: Mapped[list["StudentAnswer"]] = relationship(back_populates="student")
 
 
@@ -38,7 +39,7 @@ class StudentAnswer(Base):
 class Task(Base):
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(primary_key=True)
-    task_number: Mapped[int]
+    task_number: Mapped[int] = mapped_column(unique=True)
     task_type: Mapped[int] = mapped_column(nullable=True)
     task_answer: Mapped[str]
 
