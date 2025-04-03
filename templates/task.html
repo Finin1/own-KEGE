@@ -38,11 +38,40 @@
 
 						</div>
 						<div class="answer">
+							{% if task.type=='line' %}
 							<div class="answer-container">
 								<b>№{{task.num}} Ответ:</b><br>
 								<input name="answer{{task.num}}" id="answer{{task.num}}"><br>
 								<div onclick="localStorage.setItem({{task.num}},answer{{task.num}}.value)" >Сохранить ответ</div>
 							</div>
+							{% else %}
+								<div class="table-answer-container">
+									<b>№{{task.num}} Ответ:</b><br>
+									<table>
+										<tr>
+											<th></th>
+											{% for x in range(0,task.type[0]) %}
+											<th>
+												{{x+1}}
+											</th>
+											{%endfor%}
+										<tr>
+										{% for y in range(0,task.type[1]) %}
+										<tr>
+											<th>{{y+1}}</th>
+											{% for x in range(0,task.type[0]) %}
+											<td>
+												<input name="answer{{task.num}}x{{x}}x{{y}}" id="answer{{task.num}}x{{x}}x{{y}}">
+											</td>
+											{%endfor%}
+										</tr>
+										{%endfor%}
+									</table>
+
+
+									<div onclick="save_table({{task.num}},{{task.type[0]}},{{task.type[1]}})" >Сохранить ответ</div>
+								</div>
+							{% endif %}
 						</div>
 					</div>
 					{% endfor %}
@@ -52,6 +81,14 @@
 
 		</form>
 	<script>
+		function save_table(id,w,h){
+			for (x=0;x<w;x++){
+				for (y=0;y<h;y++){
+					localStorage.setItem(id+'x'+x+'x'+y,document.getElementById('answer'+id+'x'+x+'x'+y).value)
+				}
+			}
+		}
+
 		function get_task_by_num(n)	{
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onload = function(){
@@ -65,8 +102,18 @@
 		}
 
 		{% for task in tasks %}
-		console.log('#')
-		answer{{task.num}}.value = localStorage.getItem({{task.num}})
+			{% if task.type=='line' %}
+				answer{{task.num}}.value = localStorage.getItem({{task.num}})
+			{% else %}
+
+				{% for y in range(0,task.type[1]) %}
+					{% for x in range(0,task.type[0]) %}
+						answer{{task.num}}x{{x}}x{{y}}.value = localStorage.getItem('{{task.num}}x{{x}}x{{y}}')
+					{%endfor%}
+				{%endfor%}
+			{% endif %}
+
+
 		{%endfor%}
 
 	</script>

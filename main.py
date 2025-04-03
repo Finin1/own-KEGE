@@ -1,6 +1,10 @@
 from flask import Flask, render_template, session, request
-from typing import NamedTuple, List
-from sqlalchemy import Select
+from typing import NamedTuple, List, Union
+
+try:
+    from sqlalchemy import select as Select
+except:
+    from sqlalchemy import Select
 from openpyxl import Workbook
 
 from database import create_db, create_session
@@ -9,7 +13,7 @@ from database import Student, StudentAnswer, Task as TaskModel
 
 class Task(NamedTuple):
     num: int
-    answer_input_type: str = 'line'
+    type: Union[str,tuple] = 'line'
     files: List[str] = []
 
 
@@ -17,7 +21,7 @@ app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
 current_task_nums = [Task(1), Task(2), Task(3), Task(4), Task(5),
-                     Task(6), Task(7), Task(8), Task(9), Task(10)]
+                     Task(6), Task(7), Task(8), Task(9), Task(10), Task(25, (2,12)), Task(27, (2,2))]
 
 
 @app.route('/', methods=["GET"])
@@ -40,7 +44,7 @@ def task():
 
                 student_statement = Select(Student).where(Student.code == current_code)
                 student = db_session.scalars(student_statement).one_or_none()
-                
+
                 if student is None:
                     return render_template("error.html", title="СВОЙ КОД ВВЕДИ")
 
@@ -71,10 +75,10 @@ def finish():
                     continue
                 task_statement = Select(TaskModel).where(TaskModel.task_number == number)
                 task = db_session.scalars(task_statement).one_or_none()
-                
+
                 if task is None:
                     return render_template("error.html", title="Чё-то многова-то номеров")
-                
+
                 new_student_answer = StudentAnswer(student_id=student.id,
                                                    task_id=task.id,
                                                    student_answer=answer)

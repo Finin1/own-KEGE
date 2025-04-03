@@ -160,11 +160,10 @@ header{
 }
 .answer{
     display: flex;
-    padding: 20px;
     background-color: var(--BG);
-    height: calc(100vh - 90px);
+    height: calc(100vh - 50px);
 /*				flex: 1;*/
-    width: 200px;
+    width: 280px;
     /* display: inline-block; */
     top:0;
     left:0;
@@ -176,16 +175,54 @@ header{
     box-shadow: 0px 0px 20px 0px var(--FG);
 }
 .answer-container{
+    padding:20px;
 
     align-self: flex-end;
 }
+.table-answer-container{
+    padding-top:20px;
+    padding:10px;
 
-.answer-container > input{
-    width: 100%;
-    font-size: medium;
+}
+input{
+padding:0;
+padding-inline:0;
+padding-block:0;
+margin:0;
+
+}
+.table-answer-container input:focus {
+    outline-width: 0;
+}
+.table-answer-container table{
+border-collapse: collapse;
+}
+.table-answer-container th{
+    min-width:2em;
+    padding:2px;
+    color:var(--FG);
+    background-color:var(--AFG);
+
 }
 
-.answer-container > div{
+.table-answer-container table, .table-answer-container th, .table-answer-container td {
+  border: 1px solid var(--FG);
+}
+
+.answer-container > input{
+    width: calc(100% - 4px);
+    font-size: medium;
+}
+.table-answer-container input{
+    width: calc(100% - 4px);
+    padding:2px;
+    height: 100%
+    font-size: small;
+    border: none;
+
+}
+
+.answer-container  > div, .table-answer-container > div{
     transition: 0.25s;
     width: 100%;
     font-size: medium;
@@ -199,14 +236,23 @@ header{
     text-align: center;
 
 }
-.answer-container > div:hover{
+.answer-container > div:hover, .table-answer-container > div:hover{
     color: var(--SCL);
     background-color: var(--BG);
 }
 
-.answer-container > b{
+.answer-container,.table-answer-container > b{
     color: var(--FG);
     font-size: larger;
+}
+.table-answer-container  table{
+    width:100%;
+}
+.table-answer-container  tr{
+    width:100%;
+}
+.table-answer-container  td{
+    width:50%;
 }
 .task-num-lbl{
     width: 50px;
