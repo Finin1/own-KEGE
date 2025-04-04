@@ -241,10 +241,26 @@ border-collapse: collapse;
     background-color: var(--BG);
 }
 
-.answer-container,.table-answer-container > b{
+.answer-container > b ,.table-answer-container > b{
     color: var(--FG);
     font-size: larger;
 }
+.answer-container > a.file-load,.table-answer-container > a.file-load{
+    display:block;
+    margin-top:10px;
+    margin-bottom:10px;
+    text-decoration: none;
+    color:#000;
+}
+.answer-container > a.file-load > img,.table-answer-container > a.file-load > img{
+    width:30px;
+    height:30px;
+    margin-right:10px;
+    position:relative;
+    top:10px;
+}
+
+
 .table-answer-container  table{
     width:100%;
 }
@@ -355,3 +371,4 @@ hr{
 body > a{
     margin-left:30px;
 }
+

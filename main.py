@@ -20,8 +20,8 @@ class Task(NamedTuple):
 app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
-current_task_nums = [Task(1), Task(2), Task(3), Task(4), Task(5),
-                     Task(6), Task(7), Task(8), Task(9), Task(10), Task(25, (2,12)), Task(27, (2,2))]
+current_task_nums = [Task(1,'line',['baloon.gif','style.css']), Task(2), Task(3), Task(4), Task(5),
+                     Task(6), Task(7), Task(8), Task(9), Task(10), Task(25, (2,12)), Task(27, (2,2),['baloon.gif','style.css'])]
 
 
 @app.route('/', methods=["GET"])

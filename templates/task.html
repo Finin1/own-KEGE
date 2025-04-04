@@ -40,6 +40,10 @@
 						<div class="answer">
 							{% if task.type=='line' %}
 							<div class="answer-container">
+								{% for file in task.files %}
+								<a href="../static/{{file}}" class="file-load" download><img src="../static/file-load.svg">{{file}}</a>
+								{%endfor%}
+								<br>
 								<b>№{{task.num}} Ответ:</b><br>
 								<input name="answer{{task.num}}" id="answer{{task.num}}"><br>
 								<div onclick="localStorage.setItem({{task.num}},answer{{task.num}}.value)" >Сохранить ответ</div>
@@ -70,6 +74,9 @@
 
 
 									<div onclick="save_table({{task.num}},{{task.type[0]}},{{task.type[1]}})" >Сохранить ответ</div>
+									{% for file in task.files %}
+									<a href="../static/{{file}}" class="file-load" download><img src="../static/file-load.svg">{{file}}</a>
+									{%endfor%}
 								</div>
 							{% endif %}
 						</div>
