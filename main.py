@@ -32,7 +32,7 @@ def index():
 
 @app.route('/task/', methods=["GET", "POST"])
 def task():
-    term = datetime.timedelta(0,0,0,0,55,3)
+    term = datetime.timedelta(minutes=55, hours=3)
     print('time',term)
     # print('time',dir(term))
     caption = "ЕГЭ инфа [<Имя ученика>]"
