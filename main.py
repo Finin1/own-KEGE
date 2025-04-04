@@ -21,8 +21,11 @@ app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
 current_task_nums = [Task(1,'line',['baloon.gif','style.css']), Task(2), Task(3), Task(4), Task(5),
-                     Task(6), Task(7), Task(8), Task(9), Task(10), Task(25, (2,12)), Task(27, (2,2),['baloon.gif','style.css'])]
-
+                     Task(6), Task(7), Task(8), Task(9), Task(10), 
+                     Task(11), Task(12), Task(13), Task(14), Task(15),
+                     Task(16), Task(17), Task(18), Task(19), Task(20),
+                     Task(25, files=['baloon.gif','style.css'])]
+# (2,2),
 
 @app.route('/', methods=["GET"])
 def index():

@@ -5,7 +5,7 @@ from sqlalchemy import Select
 
 from main import app
 from word_parser import parse_Poliacov_document
-from database import Student, create_session, create_db
+from database import Student, Task, StudentAnswer, create_session, create_db
 
 
 def parse_students_list(path_to_students_list: Path) -> bool:
@@ -92,15 +92,36 @@ def get_results() -> None:
             total = 0
             answers = student.answers
             for answer in answers:
-                task = answer.task
-                number = task.task_number
-                correct_answer = task.task_answer
-                student_answer = answer.student_answer
-                if student_answer == correct_answer:
-                    new_row[number + 1] = 1
-                    total += 1
-                else:
+                task: Task = answer.task
+                number: int = task.task_number
+                correct_answer: str = task.task_answer
+                student_answer: str = answer.student_answer
+                if number == "26":  # Делать пустую ячейку "None"
+                    splited_student_answer = student_answer.split()
+                    splited_correct_answer = correct_answer.split()
                     new_row[number + 1] = 0
+                    if splited_student_answer[0] == splited_correct_answer[0]:
+                        new_row[number + 1] += 1
+                        total += 1
+                    if splited_student_answer[1] == splited_correct_answer[1]:
+                        new_row[number + 1] += 1
+                        total += 1
+                elif number == "27":
+                    splited_student_answer = student_answer.split("\n")
+                    splited_correct_answer = correct_answer.split("\n")
+                    new_row[number + 1] = 0
+                    if splited_student_answer[0] == splited_correct_answer[0]:
+                        new_row[number + 1] += 1
+                        total += 1
+                    if splited_student_answer[1] == splited_correct_answer[1]:
+                        new_row[number + 1] += 1
+                        total += 1
+                else:
+                    if student_answer == correct_answer:
+                        new_row[number + 1] = 1
+                        total += 1
+                    else:
+                        new_row[number + 1] = 0
             new_row.append(total)
             new_row.append(conversion_scale[total])
             active_sheet.append(new_row)
