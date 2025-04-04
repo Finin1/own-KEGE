@@ -97,37 +97,6 @@ def finish():
     return render_template('finish.html')
 
 
-@app.route("/result/", methods=["GET"])
-def result():
-    result_workbook = Workbook()
-    active_sheet = result_workbook.active
-    with create_session() as db_session:
-        students_statement = Select(Student)
-        students = db_session.scalars(students_statement).all()
-        active_sheet.append(["Имя", "Фамилия"] + [str(num) for num in range(1, 28)] + ["Результат"])
-        for student in students:
-            name = student.name
-            surname = student.surname
-            new_row = [name, surname]
-            new_row.extend([0] * 27)
-            total = 0
-            answers = student.answers
-            for answer in answers:
-                task = answer.task
-                number = task.task_number
-                correct_answer = task.task_answer
-                student_answer = answer.student_answer
-                if student_answer == correct_answer:
-                    new_row[number + 1] = 1
-                    total += 1
-                else:
-                    new_row[number + 1] = 0
-            new_row.append(total)
-            active_sheet.append(new_row)
-        result_workbook.save("results.xlsx")
-    return render_template("task1.html")
-
-
 @app.route("/task/<num>")
 def get_number(num: int):
     print(num)
