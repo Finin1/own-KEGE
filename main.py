@@ -6,7 +6,7 @@ try:
 except:
     from sqlalchemy import Select
 from openpyxl import Workbook
-
+import datetime
 from database import create_db, create_session
 from database import Student, StudentAnswer, Task as TaskModel
 
@@ -32,9 +32,13 @@ def index():
 
 @app.route('/task/', methods=["GET", "POST"])
 def task():
+    term = datetime.timedelta(0,0,0,0,55,3)
+    print('time',term)
+    # print('time',dir(term))
+    caption = "ЕГЭ инфа [<Имя ученика>]"
     if request.method == 'GET':
         if 'code' in session:
-            return render_template('task.html', tasks=current_task_nums)
+            return render_template('task.html', tasks=current_task_nums,term=term,caption=caption)
         else:
             return render_template('error.html', title='Много хочешь, ВВЕДИ КОД')
     elif request.method == 'POST':
@@ -55,7 +59,7 @@ def task():
         if len(request.form['code']) == 0:
             return render_template('error.html', title='Код активации нужно ВВЕСТИ')
         session['code'] = request.form['code']
-        return render_template('task.html', tasks=current_task_nums)
+        return render_template('task.html', tasks=current_task_nums,term=term,caption=caption)
 
 
 @app.route('/finish/', methods=["POST"])

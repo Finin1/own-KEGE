@@ -9,8 +9,8 @@
 		<form method="post"  action="/finish/">
 			<header>
 				<input class="menu-btn" id="send-work-btn" type="submit" value="Отправить работу">
-				<span id="timer">4:00</span>
-				<span id="title">ЕГЭ по ОБЖ #12415353</span>
+				<span id="timer">{{term.seconds//3600}}:{{(term.seconds//60)%60}}</span>
+				<span id="title">{{caption}}</span>
 			</header>
 			<div id="workspace">
 
@@ -95,7 +95,29 @@
 				}
 			}
 		}
-
+		let end = new Date()
+		if (localStorage.getItem('endH') == null){
+			console.log('new')
+			end.setHours(end.getHours()+Number(timer.innerHTML.split(':')[0]))
+			end.setMinutes(end.getMinutes()+Number(timer.innerHTML.split(':')[1]))
+			localStorage.setItem('endH',end.getHours())
+			localStorage.setItem('endM',end.getMinutes())
+		}else{
+			console.log('#')
+			end.setHours(Number(localStorage.getItem('endH')))
+			end.setMinutes(Number(localStorage.getItem('endM')))
+		}
+		function update_timer(){
+			let countdown = end.getTime() - new Date().getTime()
+			timer.innerHTML = Math.floor(countdown/1000/3600)+':'+Math.floor(countdown/1000/60)%60
+			if (timer.innerHTML.includes('-')){
+				timer.innerHTML = '0:00'
+				workspace.style.opacity = '50%'
+				workspace.style.pointerEvents = 'none'
+			}
+		}
+		update_timer()
+		let timer_interval = setInterval(update_timer, 1000);
 		function get_task_by_num(n)	{
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onload = function(){
@@ -122,6 +144,7 @@
 
 
 		{%endfor%}
+
 
 	</script>
 	</body>
