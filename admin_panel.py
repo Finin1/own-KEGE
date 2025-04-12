@@ -18,6 +18,8 @@ def parse_students_list(path_to_students_list: Path) -> bool:
         students = session.scalars(statement=statement).all()
         try:
             for student_to_remove in students:
+                for answer in student_to_remove.answers:
+                    session.delete(answer)
                 session.delete(student_to_remove)
             session.commit()
         except Exception as ex:
@@ -71,9 +73,9 @@ def init_test(path_to_root: Path) -> None:
 
 def get_results() -> None:
     conversion_scale = {0: 0, 1: 7, 2: 14, 3: 20, 4: 27,
-                        5: 34, 6: 40, 7: 43, 8: 46, 9: 48, 
-                        10: 51, 11: 54, 12: 56, 13: 59, 14: 62, 
-                        15: 64, 16: 67, 17: 70, 18: 72, 19: 75, 
+                        5: 34, 6: 40, 7: 43, 8: 46, 9: 48,
+                        10: 51, 11: 54, 12: 56, 13: 59, 14: 62,
+                        15: 64, 16: 67, 17: 70, 18: 72, 19: 75,
                         20: 78, 21: 80, 22: 83, 23: 85, 24: 88,
                         25: 90, 26: 93, 27: 95, 28: 98, 29: 100}
     result_workbook = Workbook()
@@ -82,8 +84,9 @@ def get_results() -> None:
         students_statement: Select = Select(Student)
         students = db_session.scalars(students_statement).all()
         active_sheet.append(["Имя", "Фамилия"] 
-                            + [num for num in range(1, 28)] 
+                            + [num for num in range(1, 28)]
                             + ["Первичные баллы", "Вторичные баллы"])
+        print(students)
         for student in students:
             name = student.name
             surname = student.surname
@@ -96,6 +99,8 @@ def get_results() -> None:
                 number: int = task.task_number
                 correct_answer: str = task.task_answer
                 student_answer: str = answer.student_answer
+                if student_answer == "None":
+                    new_row[number + 1] = "-"
                 if number == "26":  # Делать пустую ячейку "None"
                     splited_student_answer = student_answer.split()
                     splited_correct_answer = correct_answer.split()

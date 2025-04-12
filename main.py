@@ -1,31 +1,28 @@
+import datetime
+
 from flask import Flask, render_template, session, request
 from typing import NamedTuple, List, Union
 
 try:
     from sqlalchemy import select as Select
-except:
+except Exception:
     from sqlalchemy import Select
-from openpyxl import Workbook
-import datetime
+
 from database import create_db, create_session
 from database import Student, StudentAnswer, Task as TaskModel
 
 
 class Task(NamedTuple):
     num: int
-    type: Union[str,tuple] = 'line'
+    type: Union[str, tuple] = 'line'
     files: List[str] = []
 
 
 app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
-current_task_nums = [Task(1,'line',['baloon.gif','style.css']), Task(2), Task(3), Task(4), Task(5),
-                     Task(6), Task(7), Task(8), Task(9), Task(10), 
-                     Task(11), Task(12), Task(13), Task(14), Task(15),
-                     Task(16), Task(17), Task(18), Task(19), Task(20),
-                     Task(25, files=['baloon.gif','style.css'])]
-# (2,2),
+current_task_nums = [Task(1, (2, 2)), Task(2), Task(3, (3, 2)), Task(4), Task(5)]
+
 
 @app.route('/', methods=["GET"])
 def index():
@@ -36,12 +33,12 @@ def index():
 @app.route('/task/', methods=["GET", "POST"])
 def task():
     term = datetime.timedelta(minutes=55, hours=3)
-    print('time',term)
+    print('time', term)
     # print('time',dir(term))
     caption = "ЕГЭ инфа [<Имя ученика>]"
     if request.method == 'GET':
         if 'code' in session:
-            return render_template('task.html', tasks=current_task_nums,term=term,caption=caption)
+            return render_template('task.html', tasks=current_task_nums, term=term, caption=caption)
         else:
             return render_template('error.html', title='Много хочешь, ВВЕДИ КОД')
     elif request.method == 'POST':
@@ -62,7 +59,7 @@ def task():
         if len(request.form['code']) == 0:
             return render_template('error.html', title='Код активации нужно ВВЕСТИ')
         session['code'] = request.form['code']
-        return render_template('task.html', tasks=current_task_nums,term=term,caption=caption)
+        return render_template('task.html', tasks=current_task_nums, term=term, caption=caption)
 
 
 @app.route('/finish/', methods=["POST"])
@@ -70,29 +67,66 @@ def finish():
     if 'code' not in session:
         return render_template('error.html', title='Ты сломал систему, МОЛОДЕЦ')
     code = session['code']
+
+    request_items = request.form.items()
+    request_items = filter(lambda el: "answer" in el[0], request_items)
+    request_items = list(map(lambda el: (el[0].replace("answer", ""), el[1]), request_items))
+
+    line_items = filter(lambda el: el[0].isdigit(), request_items)
+
+    table_items = filter(lambda el: not el[0].isdigit(), request_items)
+    table_items = map(lambda el: (tuple(el[0].split("x")), el[1]), table_items)
+
+    all_answers = {}
+    for number, answer in line_items:
+        if answer == "":
+            answer = "None"
+        number = int(number)
+        all_answers[number] = answer.strip().lower()
+    
+    table_answers = {}
+    for answer_info, answer in table_items:
+        number, column, row = map(int, answer_info)
+        if number not in table_answers:
+            number = int(number)
+            table_answers[number] = {"data": [], "rows_count": 0, "columns_count": 0}
+        current_number = table_answers[number]
+        current_number["data"].append(answer)
+        current_number["rows_count"] = max(current_number["rows_count"], row + 1)
+        current_number["columns_count"] = max(current_number["columns_count"], column + 1)
+
+    for number, table in table_answers.items():
+        data = table["data"]
+        columns_count = table["columns_count"]
+        answer = ""
+        element_pos = 1
+        for element in data:
+            if element_pos % columns_count == 0:
+                space_symbol = "\n"
+            else:
+                space_symbol = " "
+            element_pos += 1
+            answer += f"{element.strip().lower()}{space_symbol}"
+        all_answers[number] = answer.strip()
+
     with create_session() as db_session:
         student_statement = Select(Student).where(Student.code == code)
         student = db_session.scalars(student_statement).one()
         try:
-            request_items = request.form.items()
-            for number, answer in request_items:
-                if "answer" in number:
-                    number = int(number.replace("answer", ""))
-                else:
-                    continue
+            for number, answer in all_answers.items():
                 task_statement = Select(TaskModel).where(TaskModel.task_number == number)
                 task = db_session.scalars(task_statement).one_or_none()
-
                 if task is None:
                     return render_template("error.html", title="Чё-то многова-то номеров")
 
                 new_student_answer = StudentAnswer(student_id=student.id,
                                                    task_id=task.id,
                                                    student_answer=answer)
+                
                 db_session.add(new_student_answer)
-            student.done = True
-            db_session.merge(student)
-            db_session.commit()
+                student.done = False  # ! CHANGE IN THE END
+                db_session.merge(student)
+                db_session.commit()
         except Exception as ex:
             print(ex)
             db_session.rollback()

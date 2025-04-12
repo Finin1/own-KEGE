@@ -3,6 +3,7 @@ from os import listdir
 from pathlib import Path
 from spire.doc import Document, CellCollection, DocumentObjectType, FileFormat
 from bs4 import BeautifulSoup
+from sqlalchemy import Select
 
 from database import create_session, Task
 
@@ -99,7 +100,15 @@ def separate_word_to_tasks(document: Document) -> None:
         else:
             number, answer = get_num_ans_pair(row.Cells, 0)
             answer_dict[number] = answer
+    
     with create_session() as session:
+        all_tasks_stm = Select(Task)
+        all_tasks = session.scalars(all_tasks_stm).all()
+
+        for task in all_tasks:
+            session.delete(task)
+        session.commit()
+        
         try:
             for number, answer in answer_dict.items():
                 new_task = Task(task_number=number, task_answer=answer)
