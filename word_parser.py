@@ -3,11 +3,12 @@ from os import listdir
 from pathlib import Path
 from spire.doc import Document, CellCollection, DocumentObjectType, FileFormat
 from bs4 import BeautifulSoup
+from typing import Tuple
 
 from database import create_session, Task
 
 
-def get_num_ans_pair(cells: CellCollection, ind: int) -> tuple[int, str]:
+def get_num_ans_pair(cells: CellCollection, ind: int) -> Tuple[int, str]:
     num_cell = cells.get_Item(ind)
     ans_cell = cells.get_Item(ind + 1)
     number = int(num_cell.Paragraphs[0].Text[:-1])

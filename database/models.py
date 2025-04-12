@@ -1,6 +1,6 @@
 from random import randint
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, DeclarativeBase, relationship, mapped_column
+from sqlalchemy.orm import Mapped, relationship
 
 
 def random_code():
@@ -55,15 +55,14 @@ except:
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy import Column, Integer, String, Boolean
 
-
     Base = declarative_base()
 
 
     class Student(Base):
         __tablename__ = "students"
         id: Mapped[int] = Column(Integer, primary_key=True)
-        name: Mapped[str]
-        surname: Mapped[str]
+        name: Mapped[str] = Column(String)
+        surname: Mapped[str] = Column(String)
         code: Mapped[int] = Column(Integer, unique=True, default=random_code)
         done: Mapped[bool] = Column(Boolean, default=False)
 
@@ -75,7 +74,7 @@ except:
         id: Mapped[int] = Column(Integer, primary_key=True)
         student_id: Mapped[int] = Column(Integer, ForeignKey("students.id"))
         task_id: Mapped[int] = Column(Integer, ForeignKey("tasks.id"))
-        student_answer: Mapped[str]
+        student_answer: Mapped[str] = Column(String)
 
         task: Mapped["Task"] = relationship("Task", back_populates="students_answers")
         student = relationship("Student", back_populates="answers")
@@ -86,6 +85,6 @@ except:
         id: Mapped[int] = Column(Integer, primary_key=True)
         task_number: Mapped[int] = Column(Integer, unique=True)
         task_type: Mapped[int] = Column(Integer, nullable=True)
-        task_answer: Mapped[str]
+        task_answer: Mapped[str] = Column(String)
 
         students_answers = relationship("StudentAnswer", back_populates="task")
