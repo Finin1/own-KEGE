@@ -101,24 +101,24 @@ def get_results() -> None:
                 student_answer: str = answer.student_answer
                 if student_answer == "None":
                     new_row[number + 1] = "-"
-                if number == "26":  # Делать пустую ячейку "None"
-                    splited_student_answer = student_answer.split()
-                    splited_correct_answer = correct_answer.split()
+                if number == "26":
+                    splitted_student_answer = student_answer.split()
+                    splitted_correct_answer = correct_answer.split()
                     new_row[number + 1] = 0
-                    if splited_student_answer[0] == splited_correct_answer[0]:
+                    if splitted_student_answer[0] == splitted_correct_answer[0]:
                         new_row[number + 1] += 1
                         total += 1
-                    if splited_student_answer[1] == splited_correct_answer[1]:
+                    if splitted_student_answer[1] == splitted_correct_answer[1]:
                         new_row[number + 1] += 1
                         total += 1
                 elif number == "27":
-                    splited_student_answer = student_answer.split("\n")
-                    splited_correct_answer = correct_answer.split("\n")
+                    splitted_student_answer = student_answer.split("\n")
+                    splitted_correct_answer = correct_answer.split("\n")
                     new_row[number + 1] = 0
-                    if splited_student_answer[0] == splited_correct_answer[0]:
+                    if splitted_student_answer[0] == splitted_correct_answer[0]:
                         new_row[number + 1] += 1
                         total += 1
-                    if splited_student_answer[1] == splited_correct_answer[1]:
+                    if splitted_student_answer[1] == splitted_correct_answer[1]:
                         new_row[number + 1] += 1
                         total += 1
                 else:

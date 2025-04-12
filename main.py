@@ -70,7 +70,7 @@ def finish():
 
     request_items = request.form.items()
     request_items = filter(lambda el: "answer" in el[0], request_items)
-    request_items = list(map(lambda el: (el[0].replace("answer", ""), el[1]), request_items))
+    request_items = [(el[0].replace("answer", ""), el[1]) for el in request_items]
 
     line_items = filter(lambda el: el[0].isdigit(), request_items)
 

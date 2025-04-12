@@ -5,6 +5,7 @@ from spire.doc import Document, CellCollection, DocumentObjectType, FileFormat
 from bs4 import BeautifulSoup
 from sqlalchemy import Select
 from typing import Tuple
+from openpyxl import Workbook, load_workbook
 
 from database import create_session, Task
 
@@ -228,7 +229,37 @@ def parse_Poliacov_document(path_to_document: Path) -> None:
     split19_21()
 
 
+def parse_from_images(path_to_images_folder: Path) -> None:
+    path_to_static = Path(".", "static", "image_parser")
+    path_to_templates = Path(".", "templates")
+    
+    images = listdir(path_to_images_folder)
+    images.remove("answers.xlsx")
+    for image in images:
+        with open(path_to_images_folder / image, "rb") as in_image:
+            with open(path_to_static / image, "wb") as out_image:
+                out_image.writelines(in_image.readlines())
+        with open(path_to_templates / (image[:-3] + "html"), "w", encoding="utf-8") as html_file:
+            soup = BeautifulSoup("<div></div>", "html.parser")
+            img_tag = soup.new_tag("img", src=f"../static/image_parser/{image}")
+            soup.div.append(img_tag)
+            html_file.write(str(soup))
+
+    answer_workbook = load_workbook(path_to_images_folder / "answers.xlsx")
+    active_sheet = answer_workbook.active
+
+    with create_session() as db_session:
+        try:
+            for number, answer in active_sheet.rows:
+                new_task = Task(task_number=number.value, task_answer=answer.value)
+                db_session.add(new_task)
+            db_session.commit()
+        except Exception as ex:
+            print(ex)
+            db_session.rollback()
+
+
 if __name__ == "__main__":
     # document_to_parse = Document("test.docx")
     path_to_document = Path("test2.docx")
-    parse_Poliacov_document(path_to_document)
+    parse_from_images(Path("imgs_to_parse"))
