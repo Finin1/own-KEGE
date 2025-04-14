@@ -3,7 +3,10 @@ from os import listdir
 from pathlib import Path
 from spire.doc import Document, CellCollection, DocumentObjectType, FileFormat
 from bs4 import BeautifulSoup
-from sqlalchemy import Select
+try:
+    from sqlalchemy import Select
+except:
+    from sqlalchemy import select as Select
 from typing import Tuple
 from openpyxl import Workbook, load_workbook
 

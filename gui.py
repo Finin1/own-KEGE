@@ -1,7 +1,7 @@
 from tkinter import Button, Frame, Label, RIGHT, BOTH, Y, SUNKEN, FLAT, SOLID, RIGHT, LEFT
 from tkinter.messagebox import askyesno
 from pathlib import Path
-from tkinter.filedialog import askdirectory
+from tkinter.filedialog import askdirectory, askopenfilename
 
 BG = '#fff'
 FG = '#2599F2'
@@ -70,6 +70,8 @@ class ConfirmButton(CustomButton):
 
 
 class FolderSelect(Frame):
+    ask_func = lambda e: askdirectory()
+
     def __init__(self, master, **kw):
         self.path: Path = Path('')
         if 'path' in kw:
@@ -85,12 +87,11 @@ class FolderSelect(Frame):
         return self.path
 
     def ask_directory(self):
-        path = askdirectory()
+        path = self.ask_func()
         if path:
             print(path)
             self.path = Path(path)
         self.label['text'] = self.path.absolute()
-        # print(askdirectory())
 
     def pack_own(self):
         self.button.pack(side=LEFT, fill=Y)
@@ -115,3 +116,7 @@ class FolderSelect(Frame):
     def place_forget(self):
         super().place_forget()
         self.pack_own_forget()
+
+
+class FileSelect(FolderSelect):
+    ask_func = lambda e: askopenfilename()

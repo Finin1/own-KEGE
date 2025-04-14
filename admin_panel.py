@@ -1,11 +1,16 @@
 import os
 from pathlib import Path
 from openpyxl import load_workbook, Workbook
-from sqlalchemy import Select
-
+try:
+    from sqlalchemy import Select
+except:
+    from sqlalchemy import select as Select
 from main import app
-from word_parser import parse_Poliacov_document
+from word_parser import parse_Poliacov_document, parse_from_images
 from database import Student, Task, StudentAnswer, create_session, create_db
+
+POLIACOV_PARSE = '0'
+IMAGES_PARSE = '1'
 
 
 def parse_students_list(path_to_students_list: Path) -> bool:
@@ -49,23 +54,26 @@ def parse_students_list(path_to_students_list: Path) -> bool:
 
         workbook_with_codes = Workbook()
         active_sheet = workbook_with_codes.active
-    
+
         for student in new_students:
             active_sheet.append([student.name, student.surname, student.code])
-        
+
         workbook_with_codes.save("students_with_codes.xlsx")
     return True
 
 
-def init_test(path_to_root: Path) -> None:
+def init_test(path_to_root: Path, parse_type: str) -> None:
     create_db()
-    
+
     path_to_excel = path_to_root / "students_list.xlsx"
     path_to_word = path_to_root / "test2.docx"
     while not parse_students_list(path_to_excel):
         pass
-    parse_Poliacov_document(path_to_word)
-    
+    if parse_type == POLIACOV_PARSE:
+        parse_Poliacov_document(path_to_word)
+    elif parse_type == IMAGES_PARSE:
+        parse_from_images(path_to_root)
+
     host = os.getenv("HOST", "localhost")
     port = int(os.getenv("PORT", 8080))
     app.run(host=host, port=port)
@@ -83,7 +91,7 @@ def get_results() -> None:
     with create_session() as db_session:
         students_statement: Select = Select(Student)
         students = db_session.scalars(students_statement).all()
-        active_sheet.append(["Имя", "Фамилия"] 
+        active_sheet.append(["Имя", "Фамилия"]
                             + [num for num in range(1, 28)]
                             + ["Первичные баллы", "Вторичные баллы"])
         print(students)
