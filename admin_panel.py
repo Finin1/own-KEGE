@@ -1,13 +1,14 @@
 import os
 from pathlib import Path
-# from openpyxl import load_workbook, Workbook
+from openpyxl import load_workbook, Workbook
 try:
     from sqlalchemy import Select
 except:
     from sqlalchemy import select as Select
 from main import app
-# from word_parser import parse_Poliacov_document, parse_from_images
+from word_parser import parse_Poliacov_document, parse_from_images
 from database import Student, Task, StudentAnswer, create_session, create_db
+
 
 POLIACOV_PARSE = '0'
 IMAGES_PARSE = '1'
@@ -94,7 +95,6 @@ def get_results() -> None:
         active_sheet.append(["Имя", "Фамилия"]
                             + [num for num in range(1, 28)]
                             + ["Первичные баллы", "Вторичные баллы"])
-        print(students)
         for student in students:
             name = student.name
             surname = student.surname

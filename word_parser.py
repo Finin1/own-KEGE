@@ -1,4 +1,6 @@
 import re
+import shutil
+
 from os import listdir
 from pathlib import Path
 from spire.doc import Document, CellCollection, DocumentObjectType, FileFormat
@@ -9,7 +11,6 @@ except:
     from sqlalchemy import select as Select
 from typing import Tuple
 from openpyxl import Workbook, load_workbook
-
 from database import create_session, Task
 
 
@@ -239,9 +240,7 @@ def parse_from_images(path_to_images_folder: Path) -> None:
     images = listdir(path_to_images_folder)
     images.remove("answers.xlsx")
     for image in images:
-        with open(path_to_images_folder / image, "rb") as in_image:
-            with open(path_to_static / image, "wb") as out_image:
-                out_image.writelines(in_image.readlines())
+        shutil.copy(path_to_images_folder / image, path_to_static / image)
         with open(path_to_templates / (image[:-3] + "html"), "w", encoding="utf-8") as html_file:
             soup = BeautifulSoup("<div></div>", "html.parser")
             img_tag = soup.new_tag("img", src=f"../static/image_parser/{image}")

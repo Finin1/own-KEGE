@@ -4,7 +4,7 @@ from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
 import logging
 from PIL import Image, ImageGrab, ImageTk
-import winsound
+# import winsound
 from tkinter.filedialog import askopenfilename
 
 
@@ -46,8 +46,8 @@ class Task(Frame):
             self.image = image
             self.update_image()
             print('LOL')
-        else:
-            winsound.MessageBeep()
+        # else:
+        #     winsound.MessageBeep()
 
     def pack(self):
         super().pack(fill=BOTH, expand=1)
