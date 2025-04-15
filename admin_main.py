@@ -11,7 +11,7 @@ class Form(Tk):
         self['bg'] = BG
         self.geometry('400x185')
         self.minsize(400,185)
-        self.attributes("-toolwindow", True)
+        # self.attributes("-toolwindow", True)
         self.title("KEGE")
         # self.wm_attributes("-topmost", True)
         self.folder_select = FolderSelect(self)

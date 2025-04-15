@@ -1,13 +1,56 @@
-from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, SINGLE
+from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
+    SINGLE, TOP, Text, SUNKEN, Label
 from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
 import logging
+from PIL import Image, ImageGrab, ImageTk
+import winsound
+from tkinter.filedialog import askopenfilename
 
-#TODO
+
+# TODO
 class Task(Frame):
     def __init__(self, master, name: str):
         super().__init__(master)
+        self['bg'] = BG
         self.name = name
+        icf_width = 30
+        self.image = None
+        self.p_image = None
+        self.image_control_frame = Frame(self, bg=BG)
+        self.image_control_frame.pack(side=LEFT, fill=Y, pady=10, padx=10)
+        self.clipboard_button = CustomButton(self.image_control_frame, text='Взять из буфера обмена',
+                                             command=self.get_image_from_clipboard, width=icf_width)
+        self.clipboard_button.pack(side=TOP)
+        self.open_image_button = CustomButton(self.image_control_frame, text='Открыть', command=self.open_image,
+                                              width=icf_width)
+        self.open_image_button.pack(side=TOP, pady=10)
+        self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
+        self.answer_field.pack(expand=1,fill=Y)
+        self.image_preview = Label(self, text='',bg=BG,justify=LEFT)
+        self.image_preview.pack(fill=BOTH, expand=1)
+
+    def update_image(self):
+        self.p_image = ImageTk.PhotoImage(self.image)
+        self.image_preview['image']=self.p_image
+
+    def open_image(self):
+        path = askopenfilename()
+        if path:
+            self.image = Image.open(path)
+            self.update_image()
+
+    def get_image_from_clipboard(self):
+        image = ImageGrab.grabclipboard()
+        if isinstance(image, Image.Image):
+            self.image = image
+            self.update_image()
+            print('LOL')
+        else:
+            winsound.MessageBeep()
+
+    def pack(self):
+        super().pack(fill=BOTH, expand=1)
 
     def __str__(self):
         return self.name
@@ -38,7 +81,7 @@ class VariantConfigForm(Toplevel):
 
     def task_selected(self, e):
         try:
-            selected = self.task_listbox.get(self.task_listbox.curselection())[0]
+            selected = self.task_listbox.get(self.task_listbox.curselection())
             if selected != self.last_selected:
                 try:
                     self.task_dict[self.last_selected].pack_forget()
