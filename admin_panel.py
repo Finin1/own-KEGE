@@ -15,23 +15,6 @@ IMAGES_PARSE = '1'
 
 
 def parse_students_list(path_to_students_list: Path) -> bool:
-    confirmation = input("Delete all old data? Y/N \n")
-    if confirmation != "Y":
-        exit(0)
-
-    with create_session() as session:
-        statement: Select = Select(Student)
-        students = session.scalars(statement=statement).all()
-        try:
-            for student_to_remove in students:
-                for answer in student_to_remove.answers:
-                    session.delete(answer)
-                session.delete(student_to_remove)
-            session.commit()
-        except Exception as ex:
-            print(ex)
-            session.rollback()
-
     students_workbook = load_workbook(path_to_students_list)
     workbook_sheet = students_workbook.active
 
@@ -63,7 +46,33 @@ def parse_students_list(path_to_students_list: Path) -> bool:
     return True
 
 
+# Нужно окно подтверждения
+def flush_students() -> None:
+    with create_session() as session:
+        answers_statement = Select(StudentAnswer)
+        answers = session.scalars(answers_statement).all()
+        student_statement = Select(Student)
+        students = session.scalars(student_statement).all()
+        session.delete(*answers)
+        session.delete(*students)
+        session.commit()
+
+
+def flush_tasks() -> None:
+    with create_session() as session:
+        tasks_statement = Select(Task)
+        tasks = session.scalars(tasks_statement).all()
+        session.delete(*tasks)
+        session.commit()
+
+
+def flush_database() -> None:
+    flush_students()
+    flush_tasks()        
+
+
 def init_test(path_to_root: Path, parse_type: str) -> None:
+    flush_students()
     create_db()
 
     path_to_excel = path_to_root / "students_list.xlsx"
@@ -139,6 +148,8 @@ def get_results() -> None:
             new_row.append(conversion_scale[total])
             active_sheet.append(new_row)
         result_workbook.save("results.xlsx")
+
+
 
 
 if __name__ == "__main__":

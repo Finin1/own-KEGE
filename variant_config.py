@@ -13,7 +13,7 @@ from database import Task as DBTask, create_session
 
 # TODO
 class Task(Frame):
-    def __init__(self, master, name: str):
+    def __init__(self, master, name: str, answer: str | None = None):
         super().__init__(master)
         self['bg'] = BG
         self.name = name
@@ -29,6 +29,8 @@ class Task(Frame):
                                               width=icf_width)
         self.open_image_button.pack(side=TOP, pady=10)
         self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
+        if answer:
+            self.answer_field.insert(0.0, answer)
         self.answer_field.pack(expand=1,fill=Y)
         self.image_preview = Label(self, text='',bg=BG,justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
@@ -76,11 +78,20 @@ class VariantConfigForm(Toplevel):
         self.add_task_btn.pack(fill=X)
         self.task_listbox = Listbox(self.left_frame, selectmode=SINGLE)
         self.task_listbox.pack(fill=BOTH, expand=1)
-        self.task_dict = {}
         self.right_frame = Frame(self, bg=BG)
         self.right_frame.pack(expand=1, fill=BOTH)
         self.task_listbox.bind('<<ListboxSelect>>', self.task_selected)
         self.last_selected = None
+        self.task_dict = {}
+        
+        with create_session() as session:
+            tasks_statement = Select(DBTask)
+            all_tasks = session.scalars(tasks_statement).all()
+            for task in all_tasks:
+                number = str(task.task_number)
+                answer = task.task_answer
+                self.task_dict[number] = Task(self.right_frame, number, answer)
+                self.task_listbox.insert(END, number)
 
     def task_selected(self, e):
         try:
