@@ -1,5 +1,6 @@
 import datetime
 
+from random import randint
 from flask import Flask, render_template, session, request
 from typing import NamedTuple, List, Union
 
@@ -21,7 +22,24 @@ class Task(NamedTuple):
 app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
-current_task_nums = [Task(1, (2, 2)), Task(2), Task(3, (3, 2)), Task(4), Task(5)]
+
+current_task_nums = []
+with create_session() as db_session:
+    tasks_statement = Select(TaskModel)
+    tasks = db_session.scalars(tasks_statement).all()
+    for task in tasks:
+        number = task.task_number
+        answer = task.task_answer
+        hight = answer.count("\n") + 1
+        width = answer.split("\n")[0].count(' ') + 1
+        if number == 25:
+            hight += randint(1, 5)
+        if hight == 1 and width == 1:
+            task_type = "line"
+        else:
+            
+            task_type = (width, hight)
+        current_task_nums.append(Task(number, task_type))
 
 
 @app.route('/', methods=["GET"])
