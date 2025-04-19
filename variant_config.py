@@ -1,5 +1,7 @@
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
+
+from sqlalchemy import Select
 from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
 import logging
@@ -7,6 +9,7 @@ from PIL import Image, ImageGrab, ImageTk
 # import winsound
 from tkinter.filedialog import askopenfilename
 
+from database import Task as DBTask, create_session
 
 # TODO
 class Task(Frame):
@@ -81,20 +84,35 @@ class VariantConfigForm(Toplevel):
 
     def task_selected(self, e):
         try:
+            tasks = self.task_dict
+            last = self.last_selected
+
+            with create_session() as session:
+                try:
+                    task_stm = Select(DBTask).where(DBTask.task_number == int(last))
+                    db_task = session.scalars(task_stm).one()
+                    last_answer = tasks[last].answer_field.get(0.0, END).strip()
+                    db_task.task_answer = last_answer
+                    session.merge(db_task)
+                    session.commit()
+                except Exception as ex:
+                    print(ex)
+                    session.rollback()
+
             selected = self.task_listbox.get(self.task_listbox.curselection())
             if selected != self.last_selected:
                 try:
-                    self.task_dict[self.last_selected].pack_forget()
+                    tasks[self.last_selected].pack_forget()
                 except:
                     logging.exception('')
-                self.task_dict[self.task_listbox.get(self.task_listbox.curselection())[0]].pack()
+                tasks[selected].pack()
                 self.last_selected = selected
         except:
             logging.exception('')
 
     def add_task(self):
         task_name = askstring('KEGE',
-                              "Введите индекс задания (непрерывная последовательность цифр и/или английских символов)")
+                              "Введите индекс задания (непрерывная последовательность цифр и/или английских символов (символы нельзя))")
         if task_name:
             # print(self.task_listbox.get(0,END))
             f = True
@@ -105,3 +123,11 @@ class VariantConfigForm(Toplevel):
             if f:
                 self.task_listbox.insert(END, task_name)
                 self.task_dict[task_name] = Task(self.right_frame, str(task_name))
+                with create_session() as session:
+                    try:
+                        new_task = DBTask(task_number=task_name, task_answer="")
+                        session.add(new_task)
+                        session.commit()
+                    except Exception as ex:
+                        print(ex)
+                        session.rollback()
