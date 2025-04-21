@@ -28,12 +28,32 @@ class Task(Frame):
         self.open_image_button = CustomButton(self.image_control_frame, text='Открыть', command=self.open_image,
                                               width=icf_width)
         self.open_image_button.pack(side=TOP, pady=10)
+        self.delete_task_button = CustomButton(self.image_control_frame, text='Удалить', command=self.delete_task,
+                                              width=icf_width)
+        self.delete_task_button.pack(side=BOTTOM, pady=10)
         self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
         if answer:
             self.answer_field.insert(0.0, answer)
         self.answer_field.pack(expand=1,fill=Y)
         self.image_preview = Label(self, text='',bg=BG,justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
+
+    def delete_task(self):
+        with create_session() as session:
+            try:
+                task_statement = Select(DBTask).where(DBTask.task_number == self.name)
+                task: DBTask = session.scalars(task_statement).one_or_none()
+
+                if task is None:
+                    pass
+                for answer in task.students_answers:
+                    session.delete(answer)
+                session.delete(task)
+                session.commit()
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+        del self
 
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
