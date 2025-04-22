@@ -72,7 +72,6 @@ def flush_database() -> None:
 
 
 def start_test() -> None:
-    create_db()
     host = os.getenv("HOST", "localhost")
     port = int(os.getenv("PORT", 8080))
     app.run(host=host, port=port)
@@ -83,18 +82,14 @@ def init_test(path_to_root: Path, parse_type: str) -> None:
     create_db()
 
     path_to_excel = path_to_root / "students_list.xlsx"
-    path_to_word = path_to_root / "test2.docx"
+    path_to_word = path_to_root / "test.docx"
     while not parse_students_list(path_to_excel):
         pass
     if parse_type == POLIACOV_PARSE:
         parse_Poliacov_document(path_to_word)
     elif parse_type == IMAGES_PARSE:
         parse_from_images(path_to_root)
-
-    host = os.getenv("HOST", "localhost")
-    port = int(os.getenv("PORT", 8080))
-    app.run(host=host, port=port)
-
+        
 
 def get_score_results() -> None:
     conversion_scale = {0: 0, 1: 7, 2: 14, 3: 20, 4: 27,
@@ -161,8 +156,6 @@ def get_score_results() -> None:
             new_row.append(conversion_scale[total])
             active_sheet.append(new_row)
         result_workbook.save("results.xlsx")
-
-
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ from database import Task as DBTask, create_session
 
 # TODO
 class Task(Frame):
-    def __init__(self, master, name: str, task_type: int,  answer: str | None = None):
+    def __init__(self, master, name: str, task_type: int, answer: str | None = None):
         super().__init__(master)
         self['bg'] = BG
         self.name = name
@@ -30,33 +30,12 @@ class Task(Frame):
         self.open_image_button = CustomButton(self.image_control_frame, text='Открыть', command=self.open_image,
                                               width=icf_width)
         self.open_image_button.pack(side=TOP, pady=10)
-        self.delete_task_button = CustomButton(self.image_control_frame, text='Удалить', command=self.delete_task,
-                                              width=icf_width)
-        self.delete_task_button.pack(side=BOTTOM, pady=10)
         self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
         if answer:
             self.answer_field.insert(0.0, answer)
         self.answer_field.pack(expand=1,fill=Y)
         self.image_preview = Label(self, text='',bg=BG,justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
-
-    def delete_task(self):
-        with create_session() as session:
-            try:
-                task_statement = Select(DBTask).where(DBTask.task_number == self.name)
-                task = session.scalars(task_statement).one_or_none()
-
-                if task is None:
-                    pass
-
-                for answer in task.students_answers:
-                    session.delete(answer)
-                session.delete(task)
-                session.commit()
-            except Exception as ex:
-                print(ex)
-                session.rollback()
-        del self
 
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
@@ -107,13 +86,18 @@ class VariantConfigForm(Toplevel):
         self.last_selected = None
         self.task_dict = {}
         
+        self.delete_task_button = CustomButton(self.task_control_frame, text='Удалить выбранное', command=self.delete_task,
+                                               width=10)
+        self.delete_task_button.pack(side=TOP, fill=X)
+
         with create_session() as session:
             tasks_statement = Select(DBTask)
             all_tasks = session.scalars(tasks_statement).all()
             for task in all_tasks:
                 number = str(task.task_number)
                 answer = task.task_answer
-                self.task_dict[number] = Task(self.right_frame, number, answer)
+                task_type = task.task_type
+                self.task_dict[number] = Task(self.right_frame, number, task_type, answer)
                 self.task_listbox.insert(END, number)
 
     def task_selected(self, e):
@@ -167,3 +151,26 @@ class VariantConfigForm(Toplevel):
                     except Exception as ex:
                         print(ex)
                         session.rollback()
+
+    def delete_task(self):
+        selected = self.task_listbox.get(self.task_listbox.curselection())
+        selected_task = self.task_dict[selected]
+
+        with create_session() as session:
+            try:
+                task_statement = Select(DBTask).where(DBTask.task_number == selected_task.name)
+                task = session.scalars(task_statement).one_or_none()
+
+                if task is None:
+                    pass
+
+                for answer in task.students_answers:
+                    session.delete(answer)
+                session.delete(task)
+                session.commit()
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+
+        self.task_listbox.delete(self.task_listbox.curselection())
+        del self.task_dict[selected]
