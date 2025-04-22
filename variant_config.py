@@ -11,12 +11,14 @@ from tkinter.filedialog import askopenfilename
 
 from database import Task as DBTask, create_session
 
+
 # TODO
 class Task(Frame):
-    def __init__(self, master, name: str, answer: str | None = None):
+    def __init__(self, master, name: str, task_type: int,  answer: str | None = None):
         super().__init__(master)
         self['bg'] = BG
         self.name = name
+        self.type = int(task_type)
         icf_width = 30
         self.image = None
         self.p_image = None
@@ -42,10 +44,11 @@ class Task(Frame):
         with create_session() as session:
             try:
                 task_statement = Select(DBTask).where(DBTask.task_number == self.name)
-                task: DBTask = session.scalars(task_statement).one_or_none()
+                task = session.scalars(task_statement).one_or_none()
 
                 if task is None:
                     pass
+
                 for answer in task.students_answers:
                     session.delete(answer)
                 session.delete(task)
@@ -144,6 +147,8 @@ class VariantConfigForm(Toplevel):
     def add_task(self):
         task_name = askstring('KEGE',
                               "Введите индекс задания (непрерывная последовательность цифр и/или английских символов (символы нельзя))")
+        task_type = askstring('KEGE',
+                              "Введите тип задания (число от 1 до 27)")
         if task_name:
             # print(self.task_listbox.get(0,END))
             f = True
@@ -153,10 +158,10 @@ class VariantConfigForm(Toplevel):
                     break
             if f:
                 self.task_listbox.insert(END, task_name)
-                self.task_dict[task_name] = Task(self.right_frame, str(task_name))
+                self.task_dict[task_name] = Task(self.right_frame, str(task_name), task_type)
                 with create_session() as session:
                     try:
-                        new_task = DBTask(task_number=task_name, task_answer="")
+                        new_task = DBTask(task_number=task_name, task_type=task_type, task_answer="")
                         session.add(new_task)
                         session.commit()
                     except Exception as ex:

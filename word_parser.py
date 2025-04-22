@@ -253,7 +253,7 @@ def parse_from_images(path_to_images_folder: Path) -> None:
     with create_session() as db_session:
         try:
             for number, answer in active_sheet.rows:
-                new_task = Task(task_number=number.value, task_answer=answer.value)
+                new_task = Task(task_number=number.value, task_type=number.value, task_answer=answer.value)
                 db_session.add(new_task)
             db_session.commit()
         except Exception as ex:

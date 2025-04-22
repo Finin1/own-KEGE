@@ -71,6 +71,13 @@ def flush_database() -> None:
     flush_tasks()        
 
 
+def start_test() -> None:
+    create_db()
+    host = os.getenv("HOST", "localhost")
+    port = int(os.getenv("PORT", 8080))
+    app.run(host=host, port=port)
+
+
 def init_test(path_to_root: Path, parse_type: str) -> None:
     flush_students()
     create_db()
@@ -89,7 +96,7 @@ def init_test(path_to_root: Path, parse_type: str) -> None:
     app.run(host=host, port=port)
 
 
-def get_results() -> None:
+def get_score_results() -> None:
     conversion_scale = {0: 0, 1: 7, 2: 14, 3: 20, 4: 27,
                         5: 34, 6: 40, 7: 43, 8: 46, 9: 48,
                         10: 51, 11: 54, 12: 56, 13: 59, 14: 62,
@@ -101,49 +108,55 @@ def get_results() -> None:
     with create_session() as db_session:
         students_statement: Select = Select(Student)
         students = db_session.scalars(students_statement).all()
+        task_statement: Select = Select(Task)
+        tasks = db_session.scalars(task_statement).all()
         active_sheet.append(["Имя", "Фамилия"]
-                            + [num for num in range(1, 28)]
+                            + [f"{task.task_number}\nТип: {task.task_type}" for task in tasks]
                             + ["Первичные баллы", "Вторичные баллы"])
         for student in students:
             name = student.name
             surname = student.surname
             new_row = [name, surname]
-            new_row.extend([0] * 27)
+            new_row.extend([0] * len(tasks))
+            number_to_row_number_dict = {}
+            for i, task in enumerate(tasks, start=2):
+                number_to_row_number_dict[task.task_number] = i
             total = 0
             answers = student.answers
             for answer in answers:
                 task: Task = answer.task
                 number: int = task.task_number
+                task_type: int = task.task_type
                 correct_answer: str = task.task_answer
                 student_answer: str = answer.student_answer
                 if student_answer == "None":
-                    new_row[number + 1] = "-"
-                if number == "26":
+                    new_row[number_to_row_number_dict[number]] = "-"
+                if task_type == 26:
                     splitted_student_answer = student_answer.split()
                     splitted_correct_answer = correct_answer.split()
-                    new_row[number + 1] = 0
+                    new_row[number_to_row_number_dict[number]] = 0
                     if splitted_student_answer[0] == splitted_correct_answer[0]:
-                        new_row[number + 1] += 1
+                        new_row[number_to_row_number_dict[number]] += 1
                         total += 1
                     if splitted_student_answer[1] == splitted_correct_answer[1]:
-                        new_row[number + 1] += 1
+                        new_row[number_to_row_number_dict[number]] += 1
                         total += 1
-                elif number == "27":
+                elif task_type == 27:
                     splitted_student_answer = student_answer.split("\n")
                     splitted_correct_answer = correct_answer.split("\n")
-                    new_row[number + 1] = 0
+                    new_row[number_to_row_number_dict[number]] = 0
                     if splitted_student_answer[0] == splitted_correct_answer[0]:
-                        new_row[number + 1] += 1
+                        new_row[number_to_row_number_dict[number]] += 1
                         total += 1
                     if splitted_student_answer[1] == splitted_correct_answer[1]:
-                        new_row[number + 1] += 1
+                        new_row[number_to_row_number_dict[number]] += 1
                         total += 1
                 else:
                     if student_answer == correct_answer:
-                        new_row[number + 1] = 1
+                        new_row[number_to_row_number_dict[number]] = 1
                         total += 1
                     else:
-                        new_row[number + 1] = 0
+                        new_row[number_to_row_number_dict[number]] = 0
             new_row.append(total)
             new_row.append(conversion_scale[total])
             active_sheet.append(new_row)
@@ -157,4 +170,4 @@ if __name__ == "__main__":
     if inp == "init":
         init_test(Path(""))
     elif inp == "result":
-        get_results()
+        get_score_results()
