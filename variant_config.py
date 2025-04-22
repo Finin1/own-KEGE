@@ -133,7 +133,7 @@ class VariantConfigForm(Toplevel):
                               "Введите индекс задания (непрерывная последовательность цифр и/или английских символов (символы нельзя))")
         task_type = askstring('KEGE',
                               "Введите тип задания (число от 1 до 27)")
-        if task_name:
+        if task_name and task_type:
             # print(self.task_listbox.get(0,END))
             f = True
             for task in self.task_listbox.get(0, END):
@@ -172,5 +172,6 @@ class VariantConfigForm(Toplevel):
                 print(ex)
                 session.rollback()
 
+        selected_task.pack_forget()
         self.task_listbox.delete(self.task_listbox.curselection())
         del self.task_dict[selected]
