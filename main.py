@@ -43,7 +43,6 @@ with create_session() as db_session:
             task_type = (width, hight)
         files_list = []
         for file in files:
-            path_to_file
             files_list.append
         current_task_nums.append(Task(number, task_type))
 
