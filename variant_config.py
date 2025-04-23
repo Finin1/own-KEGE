@@ -2,6 +2,7 @@ from pathlib import Path
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
 
+from bs4 import BeautifulSoup
 from sqlalchemy import Select
 from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
@@ -41,8 +42,17 @@ class Task(Frame):
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
         self.image_preview['image'] = self.p_image
-        path_to_save_file = Path("static", "img", self.name)
+        
+        number = self.name
+        
+        path_to_save_file = Path("static", "img", f"{number}.png")
         self.image.save(path_to_save_file)
+
+        with open(f"task{number}.html", encoding="utf-8") as html_file:
+            soup = BeautifulSoup("<div></div>", "html.parser")
+            img_tag = soup.new_tag("img", src=f"../static/img/{number}.png")
+            soup.div.append(img_tag)
+            html_file.write(str(soup))
 
     def open_image(self):
         path = askopenfilename()

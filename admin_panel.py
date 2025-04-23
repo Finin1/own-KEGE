@@ -87,8 +87,8 @@ def init_test(path_to_root: Path, parse_type: str) -> None:
         pass
     if parse_type == POLIACOV_PARSE:
         parse_Poliacov_document(path_to_word)
-    elif parse_type == IMAGES_PARSE:
-        parse_from_images(path_to_root)
+    # elif parse_type == IMAGES_PARSE:
+    #     parse_from_images(path_to_root)
         
 
 def get_score_results() -> None:
