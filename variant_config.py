@@ -2,21 +2,25 @@ from pathlib import Path
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
 
+try:
+    from sqlalchemy import Select
+except:
+    from sqlalchemy import select as Select
 from bs4 import BeautifulSoup
-from sqlalchemy import Select
 from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
+from typing import Union
 import logging
 from PIL import Image, ImageGrab, ImageTk
 # import winsound
 from tkinter.filedialog import askopenfilename
-
+import os
 from database import Task as DBTask, create_session
 
 
 # TODO
 class Task(Frame):
-    def __init__(self, master, name: str, task_type: int, answer: str | None = None):
+    def __init__(self, master, name: str, task_type: int, answer: Union[str, None] = None):
         super().__init__(master)
         self['bg'] = BG
         self.name = name
@@ -35,9 +39,33 @@ class Task(Frame):
         self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
         if answer:
             self.answer_field.insert(0.0, answer)
-        self.answer_field.pack(expand=1, fill=Y)
+        self.answer_field.pack()
+        self.files_control_frame = Frame(self.image_control_frame, bg=BG, height=30)
+        self.files_control_frame.pack(side=TOP, fill=X, pady= 10)
+        self.add_file_button = CustomButton(self.files_control_frame, text='Добавить', command=self.add_file)
+        self.add_file_button.place(x=0, y=0, relwidth=0.5, relheight=1)
+        self.add_file_button = CustomButton(self.files_control_frame, text='Убрать', command=self.remove_file)
+        self.add_file_button.place(relx=0.5, y=0, relwidth=0.5, relheight=1)
+        self.files_listbox = Listbox(self.image_control_frame, selectmode=SINGLE)
+        self.files_listbox.pack(side=TOP, fill=X)
         self.image_preview = Label(self, text='', bg=BG, justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
+
+    def add_file(self):
+        path = askopenfilename()
+        if path:
+            self.files_listbox.insert(END, path)
+            # TODO copy file to static
+
+    def remove_file(self):
+        file_path = self.files_listbox.get(self.files_listbox.curselection())
+        try:
+            print('remove')
+            # TODO removal from static
+        except:
+            pass
+
+        self.files_listbox.delete(self.files_listbox.curselection())
 
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
@@ -99,8 +127,8 @@ class VariantConfigForm(Toplevel):
         self.task_listbox.bind('<<ListboxSelect>>', self.task_selected)
         self.last_selected = None
         self.task_dict = {}
-        
-        self.delete_task_button = CustomButton(self.task_control_frame, text='Удалить выбранное', command=self.delete_task,
+
+        self.delete_task_button = CustomButton(self.task_control_frame, text='Удалить', command=self.delete_task,
                                                width=10)
         self.delete_task_button.pack(side=TOP, fill=X)
 
@@ -189,4 +217,3 @@ class VariantConfigForm(Toplevel):
         selected_task.pack_forget()
         self.task_listbox.delete(self.task_listbox.curselection())
         del self.task_dict[selected]
-        ы

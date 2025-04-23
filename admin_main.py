@@ -1,6 +1,9 @@
 from tkinter import Tk, X, LEFT, NW, StringVar, Frame, TOP, BOTH, Radiobutton
 
-from sqlalchemy import Select
+try:
+    from sqlalchemy import Select
+except:
+    from sqlalchemy import select as Select
 from admin_panel import parse_students_list, init_test, get_score_results, POLIACOV_PARSE, IMAGES_PARSE, start_test
 from gui import ConfirmButton, FolderSelect, BG, SCL, ECL, FG, FileSelect, CustomButton
 import multiprocessing
