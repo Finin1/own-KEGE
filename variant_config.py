@@ -122,15 +122,15 @@ class VariantConfigForm(Toplevel):
                 try:
                     tasks[self.last_selected].pack_forget()
                 except:
-                    logging.exception('')
+                    pass
                 tasks[selected].pack()
                 self.last_selected = selected
         except:
-            logging.exception('')
+            pass
 
     def add_task(self):
         task_name = askstring('KEGE',
-                              "Введите индекс задания (непрерывная последовательность цифр и/или английских символов (символы нельзя))")
+                              "Введите индекс задания (непрерывная последовательность цифр")
         task_type = askstring('KEGE',
                               "Введите тип задания (число от 1 до 27)")
         if task_name and task_type:
@@ -175,3 +175,4 @@ class VariantConfigForm(Toplevel):
         selected_task.pack_forget()
         self.task_listbox.delete(self.task_listbox.curselection())
         del self.task_dict[selected]
+        ы

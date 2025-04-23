@@ -69,7 +69,7 @@ class Form(Tk):
         self.images_folder_select = FolderSelect(self.images_frame)
         self.images_folder_select.pack(fill=X)
         self.images_config = CustomButton(self.images_frame, text="Редактировать вариант",font=12, command=self.variant_config)
-        self.images_config.pack(side=LEFT,pady=10)
+        self.images_config.pack(side=LEFT, pady=10)
 
         self.resizable(True, False)
         self.parse_method.trace('w',self.__parse_method_change)
@@ -79,7 +79,7 @@ class Form(Tk):
         self.vc_form = VariantConfigForm(self)
         self.vc_form.grab_set()
 
-    def __parse_method_change(self,a,b,c):
+    def __parse_method_change(self, a, b, c):
         meth = self.parse_method.get()
         if meth == POLIACOV_PARSE:
             self.geometry('600x220')
@@ -109,9 +109,6 @@ class Form(Tk):
         self.flask_process = multiprocessing.Process(target=init_test, args=(self.folder_select.get_path(),))
         self.flask_process.daemon = True
         self.flask_process.start()
-        self.start_button.deactivate()
-        self.stop_button.activate()
-
         self.check_preparations_for_startup()
 
     def get_score_results(self):
