@@ -35,7 +35,7 @@ class Form(Tk):
 
         self.stop_button = ConfirmButton(self.startup_buttons_frame, text='Остановить', command=self.stop_test,
                                          message="Остановить тестирование ?", bg=ECL, font=12, state='disabled')
-        self.init_button = ConfirmButton(self.startup_buttons_frame, text='Инициализировать',
+        self.init_button = ConfirmButton(self.startup_buttons_frame, text='Загрузить список учеников',
                                          command=lambda: self.after(1, self.init_test),
                                          message="Предыдущие данные удаляться. Продолжить ?", font=12)
         self.get_res_button = CustomButton(self.results_buttons_frame, text='Получить результаты по баллам', command=self.get_score_results,
