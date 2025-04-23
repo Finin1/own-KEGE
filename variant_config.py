@@ -39,7 +39,9 @@ class Task(Frame):
 
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
-        self.image_preview['image']=self.p_image
+        self.image_preview['image'] = self.p_image
+        
+
 
     def open_image(self):
         path = askopenfilename()

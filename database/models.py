@@ -47,9 +47,18 @@ try:
         task_number: Mapped[int] = mapped_column(unique=True)
         task_type: Mapped[int] = mapped_column(nullable=True)
         task_answer: Mapped[str]
+        file_id: Mapped[int] = mapped_column(ForeignKey("files.id"))
 
         students_answers: Mapped[list["StudentAnswer"]] = relationship(back_populates="task")
+        files: Mapped[list["File"]] = relationship(back_populates="task")
 
+
+    class File(Base):
+        __tablename__ = "files"
+        id: Mapped[int] = mapped_column(primary_key=True)
+        file_path: Mapped[str]
+
+        task: Mapped["Task"] = relationship(back_populates="files")
 
 except:
     from sqlalchemy.ext.declarative import declarative_base
@@ -85,6 +94,16 @@ except:
         id: Mapped[int] = Column(Integer, primary_key=True)
         task_number: Mapped[int] = Column(Integer, unique=True)
         task_type: Mapped[int] = Column(Integer, nullable=True)
+        file_id: Mapped[int] = Column(Integer, ForeignKey("files.id"))
         task_answer: Mapped[str] = Column(String)
 
         students_answers = relationship("StudentAnswer", back_populates="task")
+        files = relationship("File", back_populates="task")
+
+
+    class File(Base):
+        __tablename__ = "files"
+        id: Mapped[int] = Column(Integer, primary_key=True)
+        file_path: Mapped[str] = Column(String)
+
+        task: Mapped["Task"] = relationship("Task", back_populates="files")
