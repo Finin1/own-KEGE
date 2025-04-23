@@ -23,6 +23,8 @@ app = Flask(__name__)
 app.app_context()
 app.config['SECRET_KEY'] = "0"
 
+create_db()
+
 current_task_nums = []
 with create_session() as db_session:
     tasks_statement = Select(TaskModel)
@@ -37,7 +39,6 @@ with create_session() as db_session:
         if hight == 1 and width == 1:
             task_type = "line"
         else:
-            
             task_type = (width, hight)
         current_task_nums.append(Task(number, task_type))
 
