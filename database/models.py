@@ -48,7 +48,6 @@ try:
         task_type: Mapped[int] = mapped_column(nullable=True)
         task_answer: Mapped[str]
         
-
         students_answers: Mapped[list["StudentAnswer"]] = relationship(back_populates="task")
         files: Mapped[list["File"]] = relationship(back_populates="task")
 
@@ -56,7 +55,7 @@ try:
     class File(Base):
         __tablename__ = "files"
         id: Mapped[int] = mapped_column(primary_key=True)
-        file_path: Mapped[str]
+        file_name: Mapped[str]
         task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"))
 
         task: Mapped["Task"] = relationship(back_populates="files")
@@ -104,7 +103,7 @@ except:
     class File(Base):
         __tablename__ = "files"
         id: Mapped[int] = Column(Integer, primary_key=True)
-        file_path: Mapped[str] = Column(String)
+        file_name: Mapped[str] = Column(String)
         task_id: Mapped[int] = Column(Integer, ForeignKey("tasks.id"))
 
         task: Mapped["Task"] = relationship("Task", back_populates="files")

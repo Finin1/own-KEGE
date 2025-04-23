@@ -28,23 +28,27 @@ create_db()
 current_task_nums = []
 with create_session() as db_session:
     tasks_statement = Select(TaskModel)
-    tasks: list[TaskModel] = db_session.scalars(tasks_statement).all()
+    tasks = db_session.scalars(tasks_statement).all()
     for task in tasks:
         number = task.task_number
         answer = task.task_answer
         files = task.files
+        
         hight = answer.count("\n") + 1
         width = answer.split("\n")[0].count(' ') + 1
+        
         if number == 25:
             hight += randint(1, 5)
         if hight == 1 and width == 1:
             task_type = "line"
         else:
             task_type = (width, hight)
+
         files_list = []
         for file in files:
-            files_list.append
-        current_task_nums.append(Task(number, task_type))
+            files_list.append(file.file_name)
+        
+        current_task_nums.append(Task(number, task_type, files_list))
 
 
 @app.route('/', methods=["GET"])

@@ -1,3 +1,4 @@
+from pathlib import Path
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
 
@@ -33,15 +34,15 @@ class Task(Frame):
         self.answer_field = Text(self.image_control_frame, height=12, width=icf_width)
         if answer:
             self.answer_field.insert(0.0, answer)
-        self.answer_field.pack(expand=1,fill=Y)
-        self.image_preview = Label(self, text='',bg=BG,justify=LEFT)
+        self.answer_field.pack(expand=1, fill=Y)
+        self.image_preview = Label(self, text='', bg=BG, justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
 
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
         self.image_preview['image'] = self.p_image
-        
-
+        path_to_save_file = Path("static", "img", self.name)
+        self.image.save(path_to_save_file)
 
     def open_image(self):
         path = askopenfilename()
