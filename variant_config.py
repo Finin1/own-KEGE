@@ -48,7 +48,8 @@ class Task(Frame):
         path_to_save_file = Path("static", "img", f"{number}.png")
         self.image.save(path_to_save_file)
 
-        with open(f"task{number}.html", encoding="utf-8") as html_file:
+        path_to_template = Path("templates")
+        with open(path_to_template / f"task{number}.html", "w", encoding="utf-8") as html_file:
             soup = BeautifulSoup("<div></div>", "html.parser")
             img_tag = soup.new_tag("img", src=f"../static/img/{number}.png")
             soup.div.append(img_tag)

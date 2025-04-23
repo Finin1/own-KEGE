@@ -5,7 +5,7 @@ try:
     from sqlalchemy import Select
 except:
     from sqlalchemy import select as Select
-from main import app
+from main import app, update_task_list
 from word_parser import parse_Poliacov_document, parse_from_images
 from database import Student, Task, StudentAnswer, create_session, create_db
 
@@ -53,8 +53,10 @@ def flush_students() -> None:
         answers = session.scalars(answers_statement).all()
         student_statement = Select(Student)
         students = session.scalars(student_statement).all()
-        session.delete(*answers)
-        session.delete(*students)
+        for answer in answers:
+            session.delete(answer)
+        for student in students:
+            session.delete(student)
         session.commit()
 
 
@@ -72,6 +74,7 @@ def flush_database() -> None:
 
 
 def start_test() -> None:
+    update_task_list()
     host = os.getenv("HOST", "localhost")
     port = int(os.getenv("PORT", 8080))
     app.run(host=host, port=port)

@@ -106,7 +106,7 @@ class Form(Tk):
         self.stop_button.activate()
 
     def init_test(self):
-        self.flask_process = multiprocessing.Process(target=init_test, args=(self.folder_select.get_path(),))
+        self.flask_process = multiprocessing.Process(target=init_test, args=(self.folder_select.get_path(), self.parse_method.get()))
         self.flask_process.daemon = True
         self.flask_process.start()
         self.check_preparations_for_startup()
