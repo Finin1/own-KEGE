@@ -28,10 +28,11 @@ create_db()
 current_task_nums = []
 with create_session() as db_session:
     tasks_statement = Select(TaskModel)
-    tasks = db_session.scalars(tasks_statement).all()
+    tasks: list[TaskModel] = db_session.scalars(tasks_statement).all()
     for task in tasks:
         number = task.task_number
         answer = task.task_answer
+        files = task.files
         hight = answer.count("\n") + 1
         width = answer.split("\n")[0].count(' ') + 1
         if number == 25:
@@ -40,6 +41,10 @@ with create_session() as db_session:
             task_type = "line"
         else:
             task_type = (width, hight)
+        files_list = []
+        for file in files:
+            path_to_file
+            files_list.append
         current_task_nums.append(Task(number, task_type))
 
 
