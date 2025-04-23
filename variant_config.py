@@ -1,3 +1,4 @@
+from pathlib import Path
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
 
@@ -68,6 +69,8 @@ class Task(Frame):
     def update_image(self):
         self.p_image = ImageTk.PhotoImage(self.image)
         self.image_preview['image'] = self.p_image
+        path_to_save_file = Path("static", "img", self.name)
+        self.image.save(path_to_save_file)
 
     def open_image(self):
         path = askopenfilename()
