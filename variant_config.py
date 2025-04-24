@@ -1,11 +1,12 @@
+import shutil
 from pathlib import Path
 from tkinter import Toplevel, Frame, X, Y, LEFT, Listbox, BOTTOM, BOTH, END, \
     SINGLE, TOP, Text, SUNKEN, Label
-
 try:
     from sqlalchemy import Select
 except:
     from sqlalchemy import select as Select
+from sqlalchemy.sql.expression import and_ 
 from bs4 import BeautifulSoup
 from gui import BG, FG, CustomButton
 from tkinter.simpledialog import askstring
@@ -15,7 +16,7 @@ from PIL import Image, ImageGrab, ImageTk
 # import winsound
 from tkinter.filedialog import askopenfilename
 import os
-from database import Task as DBTask, create_session
+from database import Task as DBTask, File, create_session
 
 
 # TODO
@@ -48,22 +49,57 @@ class Task(Frame):
         self.add_file_button.place(relx=0.5, y=0, relwidth=0.5, relheight=1)
         self.files_listbox = Listbox(self.image_control_frame, selectmode=SINGLE)
         self.files_listbox.pack(side=TOP, fill=X)
+        
+        with create_session() as session:
+            files_statement = Select(File).join(DBTask, DBTask.id == File.task_id).where(DBTask.task_number == int(self.name))
+            all_files = session.scalars(files_statement).all()
+            for file in all_files:
+                file_name = file.file_name
+                self.files_listbox.insert(END, file_name)
+
         self.image_preview = Label(self, text='', bg=BG, justify=LEFT)
         self.image_preview.pack(fill=BOTH, expand=1)
 
     def add_file(self):
         path = askopenfilename()
         if path:
-            self.files_listbox.insert(END, path)
+            file_name = path.replace("\\", "/").split("/")[-1]
+        
+            shutil.copy(path, Path(".", "static", file_name))
+
+            with create_session() as session:
+                try:
+                    task_statement = Select(DBTask).where(DBTask.task_number == int(self.name))
+                    task = session.scalars(task_statement).one()
+                    new_file = File(file_name=file_name, task_id=task.id)
+                    session.add(new_file)
+                    session.commit()
+                except Exception as ex:
+                    print(ex)
+                    session.rollback()
+                    return
+            self.files_listbox.insert(END, file_name)
             # TODO copy file to static
 
     def remove_file(self):
-        file_path = self.files_listbox.get(self.files_listbox.curselection())
+        file_name = self.files_listbox.get(self.files_listbox.curselection())
+    
         try:
-            print('remove')
-            # TODO removal from static
-        except:
-            pass
+            os.remove(Path(".", "static", file_name))
+        except Exception as ex:
+            print(ex)
+    
+        with create_session() as session:
+            try:
+                file_statement = Select(File).join(DBTask, DBTask.id == File.task_id).where(and_(File.file_name == file_name, DBTask.task_number == int(self.name)))
+                file = session.scalars(file_statement).one()
+                session.delete(file)
+                session.commit()
+            except Exception as ex:
+                print(ex)
+                session.rollback()
+                return
+        # TODO removal from static
 
         self.files_listbox.delete(self.files_listbox.curselection())
 
@@ -183,8 +219,6 @@ class VariantConfigForm(Toplevel):
                     f = False
                     break
             if f:
-                self.task_listbox.insert(END, task_name)
-                self.task_dict[task_name] = Task(self.right_frame, str(task_name), task_type)
                 with create_session() as session:
                     try:
                         new_task = DBTask(task_number=task_name, task_type=task_type, task_answer="")
@@ -193,7 +227,12 @@ class VariantConfigForm(Toplevel):
                     except Exception as ex:
                         print(ex)
                         session.rollback()
-
+                self.task_listbox.insert(END, task_name)
+                self.task_dict[task_name] = Task(self.right_frame, str(task_name), task_type)
+            else:
+                pass
+                # сделать поп-ап
+            
     def delete_task(self):
         selected = self.task_listbox.get(self.task_listbox.curselection())
         selected_task = self.task_dict[selected]
@@ -202,12 +241,18 @@ class VariantConfigForm(Toplevel):
             try:
                 task_statement = Select(DBTask).where(DBTask.task_number == selected_task.name)
                 task = session.scalars(task_statement).one_or_none()
+                files = task.files
+                answers = task.students_answers
 
                 if task is None:
                     pass
+                
+                for file in files:
+                    session.delete(file)
 
-                for answer in task.students_answers:
+                for answer in answers:
                     session.delete(answer)
+
                 session.delete(task)
                 session.commit()
             except Exception as ex:
