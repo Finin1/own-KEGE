@@ -58,7 +58,7 @@ try:
         file_name: Mapped[str]
         task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id"))
 
-        task: Mapped["Task"] = relationship(back_populates="files")
+        task: Mapped["Task"] = relationship( back_populates="files")
 
 except:
     from sqlalchemy.ext.declarative import declarative_base
