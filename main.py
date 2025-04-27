@@ -1,5 +1,6 @@
 import datetime
 
+import os
 from random import randint
 from flask import Flask, render_template, session, request
 from typing import NamedTuple, List, Union
@@ -21,8 +22,8 @@ class Task(NamedTuple):
     type: Union[str, tuple] = 'line'
     files: List[str] = []
 
-
-app = Flask(__name__)
+abs_cur_dir_path = os.path.abspath(os.curdir)
+app = Flask(__name__, template_folder=abs_cur_dir_path + "/templates", static_url_path=abs_cur_dir_path + "/static")
 app.app_context()
 app.config['SECRET_KEY'] = "0"
 

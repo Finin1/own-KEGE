@@ -35,6 +35,29 @@ body,html,form{
     height: 40px;
     margin: 5px;
 }
+#solution-file-input{
+    transition: 0.5s;
+    padding: 7.5px;
+    background-color: transparent;
+    color: var(--BG);
+    text-align: center;
+    border-radius: 10px;
+    border: 2px dashed var(--ABG);
+    transition: 0.5s;
+    cursor: pointer;
+    float: right;
+    margin-right:10px;
+    margin: 5px;
+}
+#solution-file-input::file-selector-button{
+    display:none;
+}
+#solution-file-input + span{
+    float: right;
+    color: var(--BG);
+    margin-top:15px;
+}
+
 .menu-btn:hover{
     text-align: center;
     /* line-height: 50px; */
@@ -371,4 +394,30 @@ hr{
 body > a{
     margin-left:30px;
 }
+
+.baloon{
+  bottom:-100px;
+  position:fixed;
+  animation-name: example;
+  animation-iteration-count: 1;
+  transform: translateX(-50%);
+  user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+   cursor:crosshair;
+}
+@keyframes example {
+  from {
+  display:block;
+  bottom:-50px;
+  }
+  to {
+  bottom:calc(100vh);
+  display:block;
+  }
+}
+
 
