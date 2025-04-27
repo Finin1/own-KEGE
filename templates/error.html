@@ -10,7 +10,7 @@
     <hr>
     <a href="/">Вернуться к странице активации</a>
     {% for i in baloons %}
-        <img class="baloon" src="../static/baloon.gif" style="left:{{i[0]}}%;animation-duration: {{i[1]}}s;animation-delay: {{i[2]}}s;">
+        <img onclick="this.remove()" class="baloon" src="../static/baloon.gif" style="left:{{i[0]}}%;animation-duration: {{i[1]}}s;animation-delay: {{i[2]}}s;">
     {%endfor%}
 </body>
 </html>

@@ -401,6 +401,13 @@ body > a{
   animation-name: example;
   animation-iteration-count: 1;
   transform: translateX(-50%);
+  user-drag: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+   cursor:crosshair;
 }
 @keyframes example {
   from {
