@@ -112,7 +112,11 @@ def finish():
         print(request.files)
         print(request.form)
         f = request.files['solution_file']
-        f.save(Path('solutions', str(code) + '.' + f.filename.split('.')[-1]))
+        with create_session() as db_session:
+            student_statement = Select(Student).where(Student.code == code)
+            student = db_session.scalars(student_statement).one()
+            student_full_name = f"{student.surname} {student.name}"
+        f.save(Path('solutions', str(student_full_name) + '.' + f.filename.split('.')[-1]))
     except:
         logging.exception('')
     request_items = request.form.items()
@@ -164,7 +168,7 @@ def finish():
                 task_statement = Select(TaskModel).where(TaskModel.task_number == number)
                 task = db_session.scalars(task_statement).one_or_none()
                 if task is None:
-                    return render_error(title="Чё-то многова-то номеров")
+                    return render_error(title="Слишком много ответов")
 
                 new_student_answer = StudentAnswer(student_id=student.id,
                                                    task_id=task.id,
@@ -188,4 +192,5 @@ def get_number(num: int):
 
 if __name__ == '__main__':
     create_db()
+    update_task_list()
     app.run(host='localhost', port=8080)  # , debug=True
