@@ -6,9 +6,12 @@
 		<title>KEGE</title>
 	</head>
 	<body>
-		<form method="post"  action="/finish/">
+		<form method="post"  action="/finish/" enctype="multipart/form-data">
 			<header>
 				<input class="menu-btn" id="send-work-btn" type="submit" value="Отправить работу">
+				<input id="solution-file-input" type="file" name="solution_file"  >
+				<span>Архив с решением:</span>
+
 				<span id="timer">{{term.seconds//3600}}:{{(term.seconds//60)%60}}</span>
 				<span id="title">{{caption}}</span>
 			</header>
