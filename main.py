@@ -23,7 +23,7 @@ class Task(NamedTuple):
     files: List[str] = []
 
 abs_cur_dir_path = os.path.abspath(os.curdir)
-app = Flask(__name__, template_folder=abs_cur_dir_path + "/templates", static_url_path=abs_cur_dir_path + "/static")
+app = Flask(__name__, template_folder=abs_cur_dir_path + "/templates", static_folder=abs_cur_dir_path + "/static")
 app.app_context()
 app.config['SECRET_KEY'] = "0"
 
@@ -176,7 +176,7 @@ def finish():
                                                    student_answer=answer)
 
                 db_session.add(new_student_answer)
-                student.done = False  # ! CHANGE IN THE END
+                student.done = True  # ! CHANGE IN THE END
                 db_session.merge(student)
                 db_session.commit()
         except Exception as ex:
