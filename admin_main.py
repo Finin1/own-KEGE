@@ -140,5 +140,6 @@ class Form(Tk):
 
 if __name__ == '__main__':
     create_db()
+    multiprocessing.freeze_support()
     form = Form()
     form.mainloop()
